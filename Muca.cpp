@@ -6,6 +6,11 @@
 
 #include "Muca.h"
 
+volatile bool newTouch = false;
+void interruptmuca() {
+  newTouch = true;
+}
+
 
 Muca::Muca() {}
 
@@ -24,22 +29,29 @@ void Muca::init(bool raw = false) {
   Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
   //Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
 
+
+ //TODO: mettre une erreur si ça retourne pas la bonne valeur
+  byte initDone = -1;
   // Initialization
   if (useRaw) {
     Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(byte(0x00));
     Wire.write(byte(0x40));
-    Wire.endTransmission(I2C_ADDRESS);
+    initDone =Wire.endTransmission(I2C_ADDRESS);
   } else {
     Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(MODE_NORMAL);
     Wire.write(0);
-    Wire.endTransmission(I2C_ADDRESS);
+    initDone =   Wire.endTransmission(I2C_ADDRESS);
   }
-  delay(100);
-  Serial.println("Muca initialized");
-  delay(100);
-  isInit = true;
+
+  if(initDone == 0) {
+    Serial.println("Muca initialized");
+    delay(100);
+    isInit = true;
+  } else {
+    Serial.println("Error while setting up Muca. Are you sure the SDA/SCL are connected?")
+  }
 }
 
 bool Muca::updated() {

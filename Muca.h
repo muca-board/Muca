@@ -24,10 +24,8 @@
 #define CALIB_THRESHOLD   0
 
 
-volatile bool newTouch = false;
-void interruptmuca() {
-  newTouch = true;
-}
+#include "Wire.h"
+
 
 class TouchPoint {
   public: unsigned int flag;
@@ -37,6 +35,7 @@ class TouchPoint {
     unsigned int area;
     unsigned int id;
 };
+
 
 class Muca {
   public:
