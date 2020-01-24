@@ -1,0 +1,26 @@
+#######################################
+#Syntax Coloring Map For Muca
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Muca	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+init	KEYWORD2
+poll	KEYWORD2
+updated	KEYWORD2
+getNumberOfParameters	KEYWORD2
+getNumberOfTouches	KEYWORD2
+getTouch	KEYWORD2
+update	KEYWORD2
+pollRaw	KEYWORD2
+setGain	KEYWORD2
+getRawData	KEYWORD2
+setTouchPoints	KEYWORD2
+addPrintFunction	KEYWORD2
+getTouchData	KEYWORD2
