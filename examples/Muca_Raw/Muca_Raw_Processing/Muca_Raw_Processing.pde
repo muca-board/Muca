@@ -1,96 +1,117 @@
 import processing.serial.*;
 
-Serial myPort;  // The serial port
+// =========== CONSTANTS ==================
+int     SKIN_COLS          = 12;
+int     SKIN_ROWS          = 21;
+int     SKIN_CELLS         = SKIN_COLS * SKIN_ROWS;
 
-int numRows = 21;
-int numCols = 12 ;
-boolean invertXY = true;
+float   CELL_W             = 20;
+float   CELL_H             = 20;
 
-int[] rows;
+int     PHYSICAL_W         = 70; // mm
+int     PHYSICAL_H         = 94; //mm
 
-int physicalHeight = 70; // mm
-int physicalWidth = 94; //mm
+int     DISPLAY_W          = 700;
+int     DISPLAY_H          = 700;
 
-boolean autoCalculateRect = true;
-int rectWidth = 20;
-int rectHeight = 20;
-
-String myString = null;
-
-void setup() {
-  size(1000, 1000);
-
-  //Open Serial Port
-  printArray(Serial.list());
-  myPort = new Serial(this, Serial.list()[4], 2000000);
+int     SERIAL_PORT        = 3; //32
+int     SERIAL_RATE        = 115200;
 
 
-  //Calculate settinss
-  rectWidth = ( physicalWidth / numRows )  *5;
-  rectHeight = (  physicalHeight / numCols ) *5;
+// =========== PARSING ==================
+char    SKIN_DATA_EOS      = '\n';
+char    SKIN_DATA_SEP      = ',';
 
-  noStroke();
+int     BLACK              = 0;
+int     WHITE              = 255;
+
+
+// =========== VARIABLES ==================
+Serial  skinPort;
+int[ ]  skinBuffer;
+String  skinData      = null;
+boolean skinDataValid = false;
+PImage  skinImage     = createImage( SKIN_COLS, SKIN_ROWS, RGB );
+
+boolean MIRROR_X = false; 
+boolean MIRROR_Y = false;
+
+int ROTATE =90; // 0, 90, 180, 270
+
+void settings () { 
+  size( DISPLAY_W, DISPLAY_H );
 }
+
+void setup () { 
+  noStroke( );
+  printArray(Serial.list());
+  skinPort = new Serial( this, Serial.list( )[ SERIAL_PORT ], SERIAL_RATE );
+  CELL_W = (PHYSICAL_W / SKIN_COLS) * 7;
+  CELL_H = (PHYSICAL_H / SKIN_ROWS) * 7;
+}
+
 
 void draw() {
+  readSkinBuffer( );
+  background(200 );
 
-  boolean strOK = false;
-  while (myPort.available() > 0) {
-    myString = myPort.readStringUntil('\n');
-    if (myString != null) {
-      //     println(myString);
-      rows = int(split(myString, ','));
-      if (rows.length == numRows * numCols) strOK = true;
-      else println("skip");
-    }
-  }
-
-
-
-  if (strOK && rows.length == numRows * numCols) {
-    background(150);
-    GetFPS();
-    for (int i =0; i < numRows * numCols; i++ ) {
-      int x = i % numCols;    // % is the "modulo operator", the remainder of i / width;
-      int y = i / numCols;    // where "/" is an integer division
-      //   Debug.Log("x " + x + " y " + y);
-      //println(rows[i]);
-      fill(constrain(rows[i], 0, 255));
-      rect(x*rectWidth, y*rectHeight, rectWidth, rectHeight);
-
-      //  if (invertX) x = num_cols - x -1;
-      // if (invertY) y = num_rows - y - 1;
-      //  index = (num_cols * y) + x;
-    }
-  }
-
-
-  /*
-  for (int x = 0; x< numCols; x++) {
-   for (int y = 0; y< numRow; y++) {
+  if ( skinDataValid ) {
+    //drawSkinImage();
    
-   
-   }
-   }
-   */
+    pushMatrix();
+     
+     //MIRROR 
+    // translate(MIRROR_X ? 0:CELL_W *SKIN_COLS, MIRROR_Y ? 0: CELL_H *SKIN_ROWS);
+   // scale(MIRROR_X? 1:-1,MIRROR_Y ? 1:-1);
+    scale(-1,1);
+     
+     
+     //ROTATION
+    // translate(ROTATE == 90? CELL_W *SKIN_COLS:0,  ROTATE == 270 ? CELL_H *SKIN_ROWS:0);
+   //  rotate(radians(ROTATE));
+     
+     drawSkinHeatMap();
+     
+     popMatrix();
+    
+  }
 }
 
 
-int frameCount = 0;
-float fps = 0.0F;
-float t = 0.0F;
-float prevtt = 0.0F;
-
-void GetFPS()
-{
-  frameCount++;
-  t += millis() - prevtt;
-  if (t > 1000.0f)
-  {
-    fps = frameCount;
-    frameCount = 0;
-    t = 0;
+void readSkinBuffer() {
+  while ( skinPort.available( ) > 0 ) {
+    skinData = skinPort.readStringUntil( SKIN_DATA_EOS );
+    if ( skinData != null ) {
+      skinBuffer    = int( split( skinData, SKIN_DATA_SEP ) );
+      skinDataValid = skinBuffer.length == SKIN_CELLS;
+    }
   }
-  prevtt = millis();
-  text(fps, 500, 500);
+}
+
+void drawSkinImage() {
+  for ( int i = 0; i < SKIN_CELLS; i++ ) {
+    int   X   = ( i % SKIN_COLS ) ;
+    int   Y   = ( i / SKIN_COLS ) ;
+    int colVal = computeColor(skinBuffer[i]); 
+    skinImage.pixels[ i] = colVal;
+  }
+  skinImage.updatePixels( );
+  noSmooth();
+  image( skinImage, 0, 0);
+  smooth(4);
+}
+
+void drawSkinHeatMap( ) {
+  for ( int i = 0; i < SKIN_CELLS; i++ ) {
+    int   X   = ( i % SKIN_COLS ) ;
+    int   Y   = ( i / SKIN_COLS ) ;
+    int colVal = computeColor(skinBuffer[i]); 
+    fill(colVal);
+    rect(X*CELL_W, Y*CELL_H, CELL_W, CELL_H);
+  }
+}
+
+color computeColor( float value ) {
+  float cons =   map(constrain(value, 10, 60), 10, 60, 0, 255);
+  return color(cons, cons, cons);
 }
