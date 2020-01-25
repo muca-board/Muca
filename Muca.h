@@ -1,5 +1,9 @@
 //https://www.newhavendisplay.com/appnotes/datasheets/touchpanel/FT5x16_registers.pdf
 //https://www.buydisplay.com/download/ic/FT5206.pdf
+
+// https://github.com/focaltech-systems/drivers-input-touchscreen-FTS_driver/blob/master/ft5x06.c
+
+
 #include "Wire.h"
 
 #define CTP_INT           2
@@ -55,7 +59,11 @@ class Muca {
     short grid[NUM_ROWS * NUM_COLUMNS];
     void calibrate();
     void setGain(int val);
+    void autocal();
 
+    void setupTrucs();
+    void printInfo();
+void testconfig();
 
   private:
     bool isInit = false;
