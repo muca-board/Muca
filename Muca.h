@@ -24,6 +24,7 @@
 #define NUM_ROWS          21
 #define NUM_COLUMNS       12
 
+#define CALIBRATE         1
 #define CALIBRATION_MAX   3
 #define CALIB_THRESHOLD   0
 
@@ -57,13 +58,14 @@ class Muca {
     void pollRaw();
     bool useRaw = false;
     short grid[NUM_ROWS * NUM_COLUMNS];
-    void calibrate();
     void setGain(int val);
     void autocal();
 
     void setupTrucs();
     void printInfo();
 void testconfig();
+
+    void calibrate();
 
   private:
     bool isInit = false;
@@ -77,6 +79,9 @@ void testconfig();
 
     //RAW
     void getRawData();
+
+    #ifdef CALIBRATE
     short calibrateGrid[NUM_ROWS * NUM_COLUMNS];
     int calibrationSteps = 0;
+    #endif
 };

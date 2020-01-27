@@ -260,8 +260,8 @@ void Muca::init(bool raw = false) {
   */
 
   Wire.begin();
-  Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
-  //Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+  //Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+  Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
 
 
  //TODO: mettre une erreur si ça retourne pas la bonne valeur
@@ -450,19 +450,24 @@ void Muca::getRawData() {
 
     for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
       unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
+
+        #ifdef CALIBRATE
       if (calibrationSteps == CALIBRATION_MAX) {
         grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = CALIB_THRESHOLD + output - calibrateGrid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1];
       } else {
         calibrateGrid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
         grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
       }
+      #else
+        grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
+      #endif
     }
 
 
   } // End foreachrow
   ////////////////////////////// Serial.print("end:"); Serial.println(millis() - tt);
 
-  // Calibration
+  #ifdef CALIBRATE
   if (calibrationSteps != CALIBRATION_MAX) {
     if (grid[0] < 5000) return;
     if (calibrationSteps == 0) {
@@ -476,11 +481,14 @@ void Muca::getRawData() {
     Serial.println("Calibrate");
     calibrationSteps++;
   }
+  #endif
 
 }
 
 void Muca::calibrate() {
+  #ifdef CALIBRATE
   calibrationSteps = 0;
+  #endif
 }
 
 void Muca::setGain(int gain) {
