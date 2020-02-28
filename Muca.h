@@ -10,7 +10,6 @@
 #define I2C_ADDRESS       0x38
 
 
-
 #define MODE_NORMAL       0x00
 #define MODE_TEST         0x40
 
@@ -33,7 +32,8 @@
 
 
 class TouchPoint {
-  public: unsigned int flag;
+  public:
+    unsigned int flag;
     unsigned int x;
     unsigned int y;
     unsigned int weight;
@@ -63,7 +63,9 @@ class Muca {
 
     void setupTrucs();
     void printInfo();
-void testconfig();
+    void testconfig();
+    void setConfig(byte peak, byte cal, byte thresh, byte diff );
+
 
     void calibrate();
 

@@ -1,117 +1,155 @@
 import processing.serial.*;
 
-// =========== CONSTANTS ==================
-int     SKIN_COLS          = 12;
-int     SKIN_ROWS          = 21;
-int     SKIN_CELLS         = SKIN_COLS * SKIN_ROWS;
-
-float   CELL_W             = 20;
-float   CELL_H             = 20;
-
-int     PHYSICAL_W         = 70; // mm
-int     PHYSICAL_H         = 94; //mm
-
-int     DISPLAY_W          = 700;
-int     DISPLAY_H          = 700;
-
-int     SERIAL_PORT        = 3; //32
-int     SERIAL_RATE        = 115200;
+Serial myPort;  // Create object from Serial class
+char val;      // Data received from the serial port
 
 
-// =========== PARSING ==================
-char    SKIN_DATA_EOS      = '\n';
-char    SKIN_DATA_SEP      = ',';
 
-int     BLACK              = 0;
-int     WHITE              = 255;
+int peak;
+int cal;
+int thresh;
 
 
-// =========== VARIABLES ==================
-Serial  skinPort;
-int[ ]  skinBuffer;
-String  skinData      = null;
-boolean skinDataValid = false;
-PImage  skinImage     = createImage( SKIN_COLS, SKIN_ROWS, RGB );
 
-boolean MIRROR_X = false; 
-boolean MIRROR_Y = false;
+Slider[] sliders;
 
-int ROTATE =90; // 0, 90, 180, 270
 
-void settings () { 
-  size( DISPLAY_W, DISPLAY_H );
+void setup() 
+{
+  size(640, 360);
+  sliders = new Slider[4];
+  int hsize = 10;
+  for (int i = 0; i < sliders.length; i++) {
+    sliders[i] = new Slider(width/2, 10+i*15, 50-hsize/2, 10, sliders);
+  }  
+  String portName = Serial.list()[0];
+  myPort = new Serial(this, portName, 9600);
 }
 
-void setup () { 
-  noStroke( );
-  printArray(Serial.list());
-  skinPort = new Serial( this, Serial.list( )[ SERIAL_PORT ], SERIAL_RATE );
-  CELL_W = (PHYSICAL_W / SKIN_COLS) * 7;
-  CELL_H = (PHYSICAL_H / SKIN_ROWS) * 7;
-}
-
-
-void draw() {
-  readSkinBuffer( );
-  background(200 );
-
-  if ( skinDataValid ) {
-    //drawSkinImage();
-   
-    pushMatrix();
-     
-     //MIRROR 
-    // translate(MIRROR_X ? 0:CELL_W *SKIN_COLS, MIRROR_Y ? 0: CELL_H *SKIN_ROWS);
-   // scale(MIRROR_X? 1:-1,MIRROR_Y ? 1:-1);
-    scale(-1,1);
-     
-     
-     //ROTATION
-    // translate(ROTATE == 90? CELL_W *SKIN_COLS:0,  ROTATE == 270 ? CELL_H *SKIN_ROWS:0);
-   //  rotate(radians(ROTATE));
-     
-     drawSkinHeatMap();
-     
-     popMatrix();
-    
+void draw()
+{
+  
+  
+    background(153);
+  
+  for (int i = 0; i < sliders.length; i++) {
+    sliders[i].update();
+    sliders[i].display();
   }
+  
+  println(sliders[0].stretch);
+  
+  /*
+  
+  if ( myPort.available() > 0) { 
+    val = char(myPort.read());         
+    print(val);
+  }
+  
+ */
+ 
+ 
+ 
+ fill();
+ 
+ 
+ //    myPort.write('L');
+
 }
 
 
-void readSkinBuffer() {
-  while ( skinPort.available( ) > 0 ) {
-    skinData = skinPort.readStringUntil( SKIN_DATA_EOS );
-    if ( skinData != null ) {
-      skinBuffer    = int( split( skinData, SKIN_DATA_SEP ) );
-      skinDataValid = skinBuffer.length == SKIN_CELLS;
+
+
+
+
+class Slider {
+  
+  int x, y;
+  int boxx, boxy;
+  int stretch;
+  int size;
+  boolean over;
+  boolean press;
+  boolean locked = false;
+  boolean otherslocked = false;
+  Slider[] others;
+  
+  Slider(int ix, int iy, int il, int is, Slider[] o) {
+    x = ix;
+    y = iy;
+    stretch = il;
+    size = is;
+    boxx = x+stretch - size/2;
+    boxy = y - size/2;
+    others = o;
+  }
+  
+  void update() {
+    boxx = x+stretch;
+    boxy = y - size/2;
+    
+    for (int i=0; i<others.length; i++) {
+      if (others[i].locked == true) {
+        otherslocked = true;
+        break;
+      } else {
+        otherslocked = false;
+      }  
+    }
+    
+    if (otherslocked == false) {
+      overEvent();
+      pressEvent();
+    }
+    
+    if (press) {
+      stretch = lock(mouseX-width/2-size/2, 0, width/2-size-1);
     }
   }
-}
-
-void drawSkinImage() {
-  for ( int i = 0; i < SKIN_CELLS; i++ ) {
-    int   X   = ( i % SKIN_COLS ) ;
-    int   Y   = ( i / SKIN_COLS ) ;
-    int colVal = computeColor(skinBuffer[i]); 
-    skinImage.pixels[ i] = colVal;
+  
+  void overEvent() {
+    if (overRect(boxx, boxy, size, size)) {
+      over = true;
+    } else {
+      over = false;
+    }
   }
-  skinImage.updatePixels( );
-  noSmooth();
-  image( skinImage, 0, 0);
-  smooth(4);
-}
+  
+  void pressEvent() {
+    if (over && mousePressed || locked) {
+      press = true;
+      locked = true;
+    } else {
+      press = false;
+    }
+  }
+  
+  void releaseEvent() {
+    locked = false;
+  }
+  
+  void display() {
+    line(x, y, x+stretch, y);
+    fill(255);
+    stroke(0);
+    rect(boxx, boxy, size, size);
+    if (over || press) {
+      line(boxx, boxy, boxx+size, boxy+size);
+      line(boxx, boxy+size, boxx+size, boxy);
+    }
 
-void drawSkinHeatMap( ) {
-  for ( int i = 0; i < SKIN_CELLS; i++ ) {
-    int   X   = ( i % SKIN_COLS ) ;
-    int   Y   = ( i / SKIN_COLS ) ;
-    int colVal = computeColor(skinBuffer[i]); 
-    fill(colVal);
-    rect(X*CELL_W, Y*CELL_H, CELL_W, CELL_H);
   }
 }
 
-color computeColor( float value ) {
-  float cons =   map(constrain(value, 10, 60), 10, 60, 0, 255);
-  return color(cons, cons, cons);
+boolean overRect(int x, int y, int width, int height) {
+  if (mouseX >= x && mouseX <= x+width && 
+      mouseY >= y && mouseY <= y+height) {
+    return true;
+  } else {
+    return false;
+  }
 }
+
+int lock(int val, int minv, int maxv) { 
+  return  min(max(val, minv), maxv); 
+} 

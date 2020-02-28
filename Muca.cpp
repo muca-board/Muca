@@ -19,6 +19,36 @@ void interruptmuca() {
 Muca::Muca() {}
 
 
+void Muca::setConfig(byte peak, byte cal, byte thresh, byte diff ) {
+  Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0x80);  
+    Wire.write(peak);  // 0x46 = 70 // 0 to 80.
+    Wire.endTransmission(I2C_ADDRESS);
+
+
+  //Valid touching detect threshold   /4? ID_G_THPEAK default 60
+  Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0x81);  
+    Wire.write(cal);  // RECOMMANDED 3C
+    Wire.endTransmission(I2C_ADDRESS);
+
+
+  // Touch focus threshold               ID_G_THCAL // defaut 16 sensitivity in the range from 0 to 31. Note that lower values indicate higher sensitivity
+  Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0x82);  
+    Wire.write(thresh);  // 0x1D = 29
+    Wire.endTransmission(I2C_ADDRESS);
+
+
+  // Touch difference threshold      /16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF 
+    Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0x85);  
+    Wire.write(diff); // 0xA0 = 160 // deut 20
+    Wire.endTransmission(I2C_ADDRESS);
+
+
+
+}
 
 
 void Muca::testconfig() {
@@ -63,9 +93,38 @@ Serial.println("CONF");
     Wire.write(0x00);   // 00 true // ff false
     Wire.endTransmission(I2C_ADDRESS);
 
+
+/*
+    // auto calibration state
+      Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0xA7);  
+    Wire.write(byte(2));   // 00 true // ff false
+    Wire.endTransmission(I2C_ADDRESS);
+
+
+    delay(1000);
+
+    // auto calibration state
+      Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0xA7);  
+    Wire.write(byte(1));   // 00 true // ff false
+    Wire.endTransmission(I2C_ADDRESS);
+
+*/
+
 }
 
 void Muca::printInfo() {
+
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0xA7);
+  Wire.endTransmission();
+  Wire.requestFrom(I2C_ADDRESS,1);
+  byte state = Wire.read();
+  Serial.print("state:");
+  Serial.println(state);
+
+
 Serial.println("---");
 byte registers[10];
   Wire.beginTransmission(I2C_ADDRESS);

@@ -2,27 +2,94 @@
 
 Muca muca;
 
+
+String inputString = "";         // a String to hold incoming data
+bool stringComplete = false;  // whether the string is complete
+
+
+
 void setup() {
   Serial.begin(115200);
   muca.init(); // useInterrupt ne fonctionne pas bien
   // muca.useRaw = true;
   // muca.setGain(100);
- //  muca.autocal();
- muca.printInfo();
- muca.testconfig();
- muca.printInfo();
+  //  muca.autocal();
+  muca.printInfo();
+  muca.testconfig();
+  muca.printInfo();
 
-  
+  inputString.reserve(200);
+
 }
+
+
+void serialEvent() {
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag so the main loop can
+    // do something about it:
+    if (inChar == '\n') {
+      stringComplete = true;
+    }
+  }
+}
+
+
 
 void loop() {
+
+
+
+
+  // print the string when a newline arrives:
+  if (stringComplete) {
+    //  Serial.println(inputString);
+
+    int *RevertInt = getDelimeters(inputString, ":");
+
+    muca.setConfig(byte(RevertInt[0]), byte(RevertInt[1]), byte(RevertInt[2]), byte(RevertInt[3]));
+
+    Serial.println("Received");
+    muca.printInfo();
+
+    // clear the string:
+    inputString = "";
+    stringComplete = false;
+
+  }
+
   GetTouch();
+  delay(5);
 }
+
+
+
+
+
+int *getDelimeters(String DelString, String Delby) {
+  static int Delimeters[4];//important!!! now much delimeters;
+  int i = 0;
+  while (DelString.indexOf(Delby) >= 0) {
+    int delim = DelString.indexOf(Delby);
+    Delimeters[i] = (DelString.substring(0, delim)).toInt();
+    DelString = DelString.substring(delim + 1, DelString.length());
+    i++;
+    if (DelString.indexOf(Delby) == -1) {
+      Delimeters[i] = DelString.toInt();
+    }
+  }
+  return Delimeters;
+}
+
 
 
 void GetTouch() {
   if (muca.updated()) {
-    Serial.println("up");
+    // Serial.print("NumTouches:"); Serial.println(muca.getNumberOfTouches());
+
     for (int i = 0; i < muca.getNumberOfTouches(); i++) {
       Serial.print("Touch ");
       Serial.print(i);
