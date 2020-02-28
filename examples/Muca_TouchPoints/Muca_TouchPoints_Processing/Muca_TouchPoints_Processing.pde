@@ -1,155 +1,89 @@
 import processing.serial.*;
+import controlP5.*;
+
 
 Serial myPort;  // Create object from Serial class
 char val;      // Data received from the serial port
 
 
 
-int peak;
-int cal;
-int thresh;
+int peak = 70;
+int cal = 60;
+int thresh = 16;
+int diff = 160;
 
+ControlP5 cp5;
 
-
-Slider[] sliders;
 
 
 void setup() 
 {
   size(640, 360);
-  sliders = new Slider[4];
-  int hsize = 10;
-  for (int i = 0; i < sliders.length; i++) {
-    sliders[i] = new Slider(width/2, 10+i*15, 50-hsize/2, 10, sliders);
-  }  
+
+
+  cp5 = new ControlP5(this);
+
+  cp5.addSlider("peak")
+    .setPosition(100, 50)
+    .setRange(0, 80) ;
+
+  cp5.addSlider("cal")
+    .setPosition(100, 70)
+    .setRange(0, 150) ;
+
+
+
+
+  cp5.addSlider("thresh")
+    .setPosition(100, 90)
+    .setRange(0, 40) ;
+
+
+  cp5.addSlider("diff")
+    .setPosition(100, 110)
+    .setRange(0, 255) ;
+
+
+  cp5.addButton("send")
+    .setValue(0)
+    .setPosition(100, 130)
+    .setSize(50, 19)
+    ;
+
   String portName = Serial.list()[0];
-  myPort = new Serial(this, portName, 9600);
+  myPort = new Serial(this, portName, 115200);
 }
+
+
+// function colorA will receive changes from 
+// controller with name colorA
+public void send() {
+  
+  String t= peak + ":"+ cal + ":" +thresh+":"+diff+"\n";
+  println("Sending: " + t);
+  myPort.write(t);
+
+}
+
 
 void draw()
 {
-  
-  
-    background(153);
-  
-  for (int i = 0; i < sliders.length; i++) {
-    sliders[i].update();
-    sliders[i].display();
-  }
-  
-  println(sliders[0].stretch);
-  
-  /*
-  
-  if ( myPort.available() > 0) { 
-    val = char(myPort.read());         
-    print(val);
-  }
-  
- */
- 
- 
- 
- fill();
- 
- 
- //    myPort.write('L');
+  background(153);
+
+
+readSerial();
+
 
 }
 
 
 
 
-
-
-class Slider {
-  
-  int x, y;
-  int boxx, boxy;
-  int stretch;
-  int size;
-  boolean over;
-  boolean press;
-  boolean locked = false;
-  boolean otherslocked = false;
-  Slider[] others;
-  
-  Slider(int ix, int iy, int il, int is, Slider[] o) {
-    x = ix;
-    y = iy;
-    stretch = il;
-    size = is;
-    boxx = x+stretch - size/2;
-    boxy = y - size/2;
-    others = o;
-  }
-  
-  void update() {
-    boxx = x+stretch;
-    boxy = y - size/2;
-    
-    for (int i=0; i<others.length; i++) {
-      if (others[i].locked == true) {
-        otherslocked = true;
-        break;
-      } else {
-        otherslocked = false;
-      }  
+void readSerial() {
+  while ( myPort.available( ) > 0 ) {
+    String data = myPort.readStringUntil( '\n' );
+    if ( data != null ) {
+      print(data);
     }
-    
-    if (otherslocked == false) {
-      overEvent();
-      pressEvent();
-    }
-    
-    if (press) {
-      stretch = lock(mouseX-width/2-size/2, 0, width/2-size-1);
-    }
-  }
-  
-  void overEvent() {
-    if (overRect(boxx, boxy, size, size)) {
-      over = true;
-    } else {
-      over = false;
-    }
-  }
-  
-  void pressEvent() {
-    if (over && mousePressed || locked) {
-      press = true;
-      locked = true;
-    } else {
-      press = false;
-    }
-  }
-  
-  void releaseEvent() {
-    locked = false;
-  }
-  
-  void display() {
-    line(x, y, x+stretch, y);
-    fill(255);
-    stroke(0);
-    rect(boxx, boxy, size, size);
-    if (over || press) {
-      line(boxx, boxy, boxx+size, boxy+size);
-      line(boxx, boxy+size, boxx+size, boxy);
-    }
-
   }
 }
-
-boolean overRect(int x, int y, int width, int height) {
-  if (mouseX >= x && mouseX <= x+width && 
-      mouseY >= y && mouseY <= y+height) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-int lock(int val, int minv, int maxv) { 
-  return  min(max(val, minv), maxv); 
-} 

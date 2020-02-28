@@ -15,8 +15,8 @@ void setup() {
   // muca.setGain(100);
   //  muca.autocal();
   muca.printInfo();
-  muca.testconfig();
-  muca.printInfo();
+  //muca.testconfig();
+  //muca.printInfo();
 
   inputString.reserve(200);
 
