@@ -1,4 +1,4 @@
-#include <Muca.h>
+ #include <Muca.h>
 
 Muca muca;
 
@@ -13,9 +13,12 @@ void setup() {
   muca.init(); // useInterrupt ne fonctionne pas bien
   // muca.useRaw = true;
   // muca.setGain(100);
-  //  muca.autocal();
+ //  muca.autocal();
   muca.printInfo();
-  //muca.testconfig();
+ // muca.testconfig();
+  //muca.printInfo();
+//muca.autocal();
+  //muca.autocal();
   //muca.printInfo();
 
   inputString.reserve(200);
@@ -41,18 +44,14 @@ void serialEvent() {
 
 void loop() {
 
-
-
-
   // print the string when a newline arrives:
   if (stringComplete) {
-    //  Serial.println(inputString);
+     Serial.println(inputString);
+    Serial.println("Received");
 
     int *RevertInt = getDelimeters(inputString, ":");
-
     muca.setConfig(byte(RevertInt[0]), byte(RevertInt[1]), byte(RevertInt[2]), byte(RevertInt[3]));
 
-    Serial.println("Received");
     muca.printInfo();
 
     // clear the string:
@@ -64,9 +63,6 @@ void loop() {
   GetTouch();
   delay(5);
 }
-
-
-
 
 
 int *getDelimeters(String DelString, String Delby) {

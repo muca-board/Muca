@@ -7,10 +7,17 @@ char val;      // Data received from the serial port
 
 
 
-int peak = 70;
-int cal = 60;
-int thresh = 16;
-int diff = 160;
+// This register describes valid touching detect threshold.
+int touchdetectthresh = 70; // The actual value will be 4 times of the register’s value. Default: 120/4
+
+// This register describes valid touching peak detect threshold.
+int touchpeak = 60; // Default: 60
+
+// This register describes threshold when calculating the focus of touching.
+int threshfocus = 16; // Default: 16
+
+//This register describes threshold whether the coordinate is different from the original.
+int threashdiff = 160; //The actual value must be 16 times of the register’s value. Default : 128
 
 ControlP5 cp5;
 
@@ -18,35 +25,30 @@ ControlP5 cp5;
 
 void setup() 
 {
-  size(640, 360);
+  size(300, 200);
 
 
   cp5 = new ControlP5(this);
 
-  cp5.addSlider("peak")
-    .setPosition(100, 50)
+  cp5.addSlider("touchdetectthresh")
+    .setPosition(50, 50)
     .setRange(0, 80) ;
 
-  cp5.addSlider("cal")
-    .setPosition(100, 70)
+  cp5.addSlider("touchpeak")
+    .setPosition(50, 70)
     .setRange(0, 150) ;
 
-
-
-
-  cp5.addSlider("thresh")
-    .setPosition(100, 90)
+  cp5.addSlider("threshfocus")
+    .setPosition(50, 90)
     .setRange(0, 40) ;
 
-
-  cp5.addSlider("diff")
-    .setPosition(100, 110)
+  cp5.addSlider("threashdiff")
+    .setPosition(50, 110)
     .setRange(0, 255) ;
-
 
   cp5.addButton("send")
     .setValue(0)
-    .setPosition(100, 130)
+    .setPosition(50, 130)
     .setSize(50, 19)
     ;
 
@@ -59,7 +61,7 @@ void setup()
 // controller with name colorA
 public void send() {
   
-  String t= peak + ":"+ cal + ":" +thresh+":"+diff+"\n";
+  String t= touchdetectthresh + ":"+ touchpeak + ":" +threshfocus+":"+threashdiff+"\n";
   println("Sending: " + t);
   myPort.write(t);
 
