@@ -8,7 +8,7 @@ char val;      // Data received from the serial port
 
 
 // This register describes valid touching detect threshold.
-int touchdetectthresh = 70; // The actual value will be 4 times of the register’s value. Default: 120/4
+int touchdetectthresh = 70; // 70*4 // The actual value will be 4 times of the register’s value. Default: 120/4
 
 // This register describes valid touching peak detect threshold.
 int touchpeak = 60; // Default: 60

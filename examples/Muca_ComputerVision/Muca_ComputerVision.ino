@@ -7,7 +7,7 @@ void setup() {
 
   muca.init(); // useInterrupt ne fonctionne pas bien
   muca.useRaw = true;
- // muca.setGain(100);
+ muca.setGain(255);
 }
 
 void loop() {
@@ -24,7 +24,7 @@ void GetRaw() {
    Serial.println();
   }
   
- // delay(1);
+ delay(1);
 }
 
 

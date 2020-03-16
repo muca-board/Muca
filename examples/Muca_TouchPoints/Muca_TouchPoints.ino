@@ -10,6 +10,7 @@ bool stringComplete = false;  // whether the string is complete
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("lol");
   muca.init(); // useInterrupt ne fonctionne pas bien
   // muca.useRaw = true;
   // muca.setGain(100);

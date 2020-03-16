@@ -375,7 +375,7 @@ void Muca::init(bool raw = false) {
   */
 
   Wire.begin();
-  //Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+ // Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
   Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
 
 

@@ -19,7 +19,7 @@ int     PHYSICAL_H         = 94; //mm
 int     DISPLAY_W          = 700;
 int     DISPLAY_H          = 700;
 
-int     SERIAL_PORT        = 3; //32
+int     SERIAL_PORT        = 0; //32
 int     SERIAL_RATE        = 115200;
 
 
@@ -45,20 +45,27 @@ private PImage destImg;
 
 
 
+
+// Serial cettings
+int thresholdMin = 0;
+int thresholdMax = 20;
+
+
+
 int resizeFactor = 30;
 
 // Computer vision settings
-int imgageProcessing = 4; // 0 INTER_NEAREST // 1 INTER_LINEAR  // 2 INTER_CUBIC  3 // INTER_AREA  4 // INTER_LANCZOS4
+int imgageProcessing = 0; // 0 INTER_NEAREST // 1 INTER_LINEAR  // 2 INTER_CUBIC  3 // INTER_AREA  4 // INTER_LANCZOS4
 
 
 // Blob detection settings
-boolean enableBlobDetection = true;
+boolean enableBlobDetection = false;
 boolean drawBlobCenter = true;
 boolean drawBlobContour = true;
-boolean enableThreshold = true;
+boolean enableThreshold = false;
 float thresholdBlob = 0.8f;
-int thresholdMin = 120;
-int thresholdMax = 255;
+int thresholdBlobMin = 120;
+int thresholdBlobMax = 255;
 
 
 
@@ -119,7 +126,7 @@ void saveSkinImage() {
 }
 
 color computeColor( float value ) {
-  float cons =   map(constrain(value, 10, 60), 10, 60, 0, 255);
+  float cons =   map(constrain(value, thresholdMin, thresholdMax), thresholdMin,thresholdMax, 0, 255);
   return color(cons, cons, cons);
 }
 
@@ -135,7 +142,7 @@ void performCV() {
   // Imgproc.resize(skinImageBlackWhite, skinImageRezied, sz, 0, 0, Imgproc.INTER_CUBIC ); // resize // INTER_NEAREST // INTER_CUBIC  Imgproc.INTER_LANCZOS4
   Imgproc.resize(skinImageBlackWhite, skinImageRezied, sz, 0, 0, imgageProcessing); // resize // INTER_NEAREST
 
-  if (enableThreshold) Imgproc.threshold(skinImageRezied, skinImageRezied, thresholdMin, thresholdMax, Imgproc.THRESH_BINARY);
+  if (enableThreshold) Imgproc.threshold(skinImageRezied, skinImageRezied, thresholdBlobMin, thresholdBlobMax, Imgproc.THRESH_BINARY);
 
   
   opencv.toPImage(skinImageRezied, destImg); // store in Pimage for drawing later

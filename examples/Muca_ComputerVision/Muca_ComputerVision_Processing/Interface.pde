@@ -37,7 +37,7 @@ void InterfaceSetup() {
     .addItem("Linear", 1)
     .addItem("Cubic", 2)
     .addItem("LANCZOS4", 4)
-    .activate(3)
+    .activate(0)
     .moveTo(g0)
     ;
 
@@ -67,6 +67,17 @@ void InterfaceSetup() {
     ;
 
 
+  cp5.addSlider("thresholdMin")
+    .setPosition(10, 90)
+    .setRange(0, 255)
+    .moveTo(g0)
+    ;
+
+  cp5.addSlider("thresholdMax")
+    .setPosition(10, 100)
+    .setRange(0, 255)
+    .moveTo(g0)
+    ;
 
 
 
@@ -94,13 +105,13 @@ void InterfaceSetup() {
     .setText("ENABLE")
     .setPosition(20,10).moveTo(g1);
 
-  cp5.addSlider("thresholdMin")
+  cp5.addSlider("thresholdBlobMin")
     .setPosition(10, 60)
     .setRange(0, 255)
     .moveTo(g1)
     ;
 
-  cp5.addSlider("thresholdMax")
+  cp5.addSlider("thresholdBlobMax")
     .setPosition(10, 70)
     .setRange(0, 255)
     .moveTo(g1)
