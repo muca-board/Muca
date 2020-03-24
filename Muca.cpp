@@ -22,14 +22,20 @@ Muca::Muca() {}
 void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, byte threashdiff ) {
 
 
-  Serial.println("Receiving config");
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0xA7);
+      Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
+      Wire.endTransmission(I2C_ADDRESS);
+
+
+
   // range 0 to 80
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0x80);
   Wire.write(touchdetectthresh);  // 0x46 = 70 // 0 to 80.
   Wire.endTransmission(I2C_ADDRESS);
 
-
+  delay(10);
   //Valid touching detect threshold
   //4? ID_G_THPEAK default 60
   Wire.beginTransmission(I2C_ADDRESS);
@@ -37,7 +43,7 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
   Wire.write(touchpeak);  // RECOMMANDED 3C
   Wire.endTransmission(I2C_ADDRESS);
 
-
+  delay(10);
   // Touch focus threshold               ID_G_THCAL
   // defaut 16 sensitivity in the range from 0 to 31. Note that lower values indicate higher sensitivity
   Wire.beginTransmission(I2C_ADDRESS);
@@ -45,7 +51,7 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
   Wire.write(threshfocus);  // 0x1D = 29
   Wire.endTransmission(I2C_ADDRESS);
 
-
+  delay(10);
   // Touch difference threshold
   //*16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF
   Wire.beginTransmission(I2C_ADDRESS);
@@ -56,11 +62,12 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
 
 
   // enforce running mode
+     delay(100);
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0xA7);
+      Wire.write(byte(1));   // 00 true // ff false // mode 1 ne marche pas
+      Wire.endTransmission(I2C_ADDRESS);
 
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0xA7);
-  Wire.write(byte(4));   // 00 true // ff false
-  Wire.endTransmission(I2C_ADDRESS);
 }
 
 
@@ -132,14 +139,14 @@ void Muca::testconfig() {
       // working mode
 
   */
-      /*
+    
       delay(100);
         Wire.beginTransmission(I2C_ADDRESS);
       Wire.write(0xA7);
       Wire.write(byte(2));   // 00 true // ff false
       Wire.endTransmission(I2C_ADDRESS);
       delay(100);
-      */
+     
   // force normal mode
 
 
@@ -251,34 +258,38 @@ void Muca::printInfo() {
   registers[3] = Wire.read();
   Wire.endTransmission(false);
 
-
+/*
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0xA0);
   Wire.endTransmission(false);
   Wire.requestFrom(I2C_ADDRESS, 1);
   registers[4] = Wire.read();
   Wire.endTransmission(false);
-
+*/
 
   Serial.print("ID_G_THGROUP\t");
-  Serial.println(registers[0]);
+  Serial.print(registers[0]);
+  Serial.print("\t");
   Serial.print("ID_G_THPEAK\t");
-  Serial.println(registers[1]);
+  Serial.print(registers[1]);
+  Serial.print("\t");
   Serial.print("ID_G_THCAL\t");
-  Serial.println(registers[2]);
+  Serial.print(registers[2]);
+  Serial.print("\t");
   Serial.print("ID_G_THDIFF\t");
-  Serial.println(registers[3]);
-  Serial.print("AUTO_CLB_MODE\t");
-  Serial.println(registers[4]);
+  Serial.print(registers[3]);
+    Serial.print("\t");
+Serial.print("AUTO_CLB_MODE\t");
+  Serial.print(registers[4]);
+  Serial.println("\t");
 
       // Remettre en mode normal
-      delay(100);
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0xA7);
-      Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
-      Wire.endTransmission(I2C_ADDRESS);
-
-
+    delay(100);
+   /* Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0xA7);
+    Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
+    Wire.endTransmission(I2C_ADDRESS);
+*/
   /*
       byte registers[10];
       Wire.requestFrom(0x38, 0x80, true);
@@ -493,7 +504,7 @@ void Muca::init(bool raw = false) {
       // Interrupt
     pinMode(CTP_INT ,INPUT);
     #ifdef digitalPinToInterrupt
-    Serial.println("attachinterrupt");
+    Serial.println("Muca::attachinterrupt");
      attachInterrupt(digitalPinToInterrupt(CTP_INT),interruptmuca,FALLING);
     #else
       attachInterrupt(0,touch_interrupt,FALLING);

@@ -1,4 +1,4 @@
- #include <Muca.h>
+#include <Muca.h>
 
 Muca muca;
 
@@ -10,18 +10,17 @@ bool stringComplete = false;  // whether the string is complete
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("lol");
   muca.init(); // useInterrupt ne fonctionne pas bien
   // muca.useRaw = true;
   // muca.setGain(100);
- //  muca.autocal();
- muca.printInfo();
- // muca.autocal();
- // muca.printInfo();
+  //  muca.autocal();
+ Serial.print("CURRENT\t"); muca.printInfo();
+  // muca.autocal();
+  // muca.printInfo();
 
   //muca.autocal();
   //muca.printInfo();
- //muca.testconfig();
+  //muca.testconfig();
 
   inputString.reserve(200);
 
@@ -48,13 +47,16 @@ void loop() {
 
   // print the string when a newline arrives:
   if (stringComplete) {
-     Serial.println(inputString);
-    Serial.println("Received");
+    Serial.print("Received:"); Serial.print(inputString);
+
+    Serial.print("CURRENT\t");
+    muca.printInfo();
+
 
     int *RevertInt = getDelimeters(inputString, ":");
     muca.setConfig(byte(RevertInt[0]), byte(RevertInt[1]), byte(RevertInt[2]), byte(RevertInt[3]));
 
-    muca.printInfo();
+    Serial.print("NEW\t"); muca.printInfo();
 
     // clear the string:
     inputString = "";
@@ -86,8 +88,8 @@ int *getDelimeters(String DelString, String Delby) {
 
 void GetTouch() {
   if (muca.updated()) {
-    Serial.print("NumTouches:"); Serial.println(muca.getNumberOfTouches());
-
+    Serial.print("NTouch:"); Serial.print(muca.getNumberOfTouches());
+    Serial.print("\t");
     for (int i = 0; i < muca.getNumberOfTouches(); i++) {
       Serial.print("Touch ");
       Serial.print(i);
@@ -101,7 +103,7 @@ void GetTouch() {
       Serial.print(muca.getTouch(i).weight);
       Serial.print(" |\t");
     }
-    if ( muca.getNumberOfTouches() != 0) Serial.println("");
+    Serial.println("");
   }
 }
 

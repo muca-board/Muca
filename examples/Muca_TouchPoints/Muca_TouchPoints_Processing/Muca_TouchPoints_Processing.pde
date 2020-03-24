@@ -52,7 +52,7 @@ void setup()
     .setSize(50, 19)
     ;
 
-  String portName = Serial.list()[0];
+  String portName = Serial.list()[3];
   myPort = new Serial(this, portName, 115200);
 }
 
