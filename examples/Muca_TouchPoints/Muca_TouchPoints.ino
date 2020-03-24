@@ -15,12 +15,13 @@ void setup() {
   // muca.useRaw = true;
   // muca.setGain(100);
  //  muca.autocal();
-  muca.printInfo();
- // muca.testconfig();
-  //muca.printInfo();
-//muca.autocal();
+ muca.printInfo();
+ // muca.autocal();
+ // muca.printInfo();
+
   //muca.autocal();
   //muca.printInfo();
+ //muca.testconfig();
 
   inputString.reserve(200);
 
@@ -85,7 +86,7 @@ int *getDelimeters(String DelString, String Delby) {
 
 void GetTouch() {
   if (muca.updated()) {
-    // Serial.print("NumTouches:"); Serial.println(muca.getNumberOfTouches());
+    Serial.print("NumTouches:"); Serial.println(muca.getNumberOfTouches());
 
     for (int i = 0; i < muca.getNumberOfTouches(); i++) {
       Serial.print("Touch ");

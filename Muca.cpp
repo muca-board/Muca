@@ -21,346 +21,427 @@ Muca::Muca() {}
 
 void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, byte threashdiff ) {
 
+
+  Serial.println("Receiving config");
   // range 0 to 80
   Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x80);  
-    Wire.write(touchdetectthresh);  // 0x46 = 70 // 0 to 80.
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.write(0x80);
+  Wire.write(touchdetectthresh);  // 0x46 = 70 // 0 to 80.
+  Wire.endTransmission(I2C_ADDRESS);
 
 
-  //Valid touching detect threshold   
-    //4? ID_G_THPEAK default 60
+  //Valid touching detect threshold
+  //4? ID_G_THPEAK default 60
   Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x81);  
-    Wire.write(touchpeak);  // RECOMMANDED 3C
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.write(0x81);
+  Wire.write(touchpeak);  // RECOMMANDED 3C
+  Wire.endTransmission(I2C_ADDRESS);
 
 
-  // Touch focus threshold               ID_G_THCAL 
+  // Touch focus threshold               ID_G_THCAL
   // defaut 16 sensitivity in the range from 0 to 31. Note that lower values indicate higher sensitivity
   Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x82);  
-    Wire.write(threshfocus);  // 0x1D = 29
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.write(0x82);
+  Wire.write(threshfocus);  // 0x1D = 29
+  Wire.endTransmission(I2C_ADDRESS);
 
 
-  // Touch difference threshold      
-  //*16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF 
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x85);  
-    Wire.write(threashdiff); // 0xA0 = 160 // deut 20
-    Wire.endTransmission(I2C_ADDRESS);
+  // Touch difference threshold
+  //*16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0x85);
+  Wire.write(threashdiff); // 0xA0 = 160 // deut 20
+  Wire.endTransmission(I2C_ADDRESS);
 
 
 
-// enforce running mode
+  // enforce running mode
 
-Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0xA7);  
-    Wire.write(byte(1));   // 00 true // ff false
-    Wire.endTransmission(I2C_ADDRESS);
-
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0xA7);
+  Wire.write(byte(4));   // 00 true // ff false
+  Wire.endTransmission(I2C_ADDRESS);
 }
 
 
 void Muca::testconfig() {
 
-Serial.println("---");
-Serial.println("CONF");
+  Serial.println("---");
+  Serial.println("CONF");
+
+        // working mode
+        Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0xA7);
+      Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
+      Wire.endTransmission(I2C_ADDRESS);
+/*
+
   //Valid touching detect threshold  /4 default 120/4     ID_G_THGROUP
   Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x80);  
-    Wire.write(0x46);  // 0x46 = 70 // 0 to 80.
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.write(0x80);
+  Wire.write(0x46);  // 0x46 = 70 // 0 to 80.
+  Wire.endTransmission(I2C_ADDRESS);
 
 
   //Valid touching detect threshold   /4? ID_G_THPEAK default 60
   Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x81);  
-    Wire.write(0x3C);  // RECOMMANDED 3C
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.write(0x81);
+  Wire.write(0x3C);  // RECOMMANDED 3C
+  Wire.endTransmission(I2C_ADDRESS);
 
 
   // Touch focus threshold               ID_G_THCAL // defaut 16 sensitivity in the range from 0 to 31. Note that lower values indicate higher sensitivity
   Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x82);  
-    Wire.write(0x10);  // 0x1D = 29
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.write(0x82);
+  Wire.write(0x10);  // 0x1D = 29
+  Wire.endTransmission(I2C_ADDRESS);
 
 
-  // Touch difference threshold      /16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF 
+  // Touch difference threshold      /16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF
   Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x85);  
-    Wire.write(0xA0); // 0xA0 = 160 // deut 20
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.write(0x85);
+  Wire.write(0xA0); // 0xA0 = 160 // deut 20
+  Wire.endTransmission(I2C_ADDRESS);
 
-
-
-
-
-
-// SETUP AUTO CALIBRATION
-  Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0xA0);  
-    Wire.write(0x00);   // 00 true // ff false
-    Wire.endTransmission(I2C_ADDRESS);
-
-
-/*
-    // auto calibration state
-      Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0xA7);  
-    Wire.write(byte(2));   // 00 true // ff false
-    Wire.endTransmission(I2C_ADDRESS);
-
-
-    delay(1000);
-
-    // working mode
-      Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0xA7);  
-    Wire.write(byte(1));   // 00 true // ff false
-    Wire.endTransmission(I2C_ADDRESS);
-
+*/
+      // working mode
+  /*      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0xA7);
+      Wire.write(byte(1));   // 00 true // ff false
+      Wire.endTransmission(I2C_ADDRESS);
 */
 
 
-// force normal mode
+  // SETUP AUTO CALIBRATION
+ /* Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0xA0);
+  Wire.write(0x00);   // 00 true // ff false
+  Wire.endTransmission(I2C_ADDRESS);
 
+*/
+  /*
+      // auto calibration state
         Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0);
-    Wire.write(MODE_NORMAL);
-     Wire.endTransmission(I2C_ADDRESS);
+      Wire.write(0xA7);
+      Wire.write(byte(2));   // 00 true // ff false
+      Wire.endTransmission(I2C_ADDRESS);
+
+
+      delay(1000);
+
+      // working mode
+
+  */
+      /*
+      delay(100);
+        Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0xA7);
+      Wire.write(byte(2));   // 00 true // ff false
+      Wire.endTransmission(I2C_ADDRESS);
+      delay(100);
+      */
+  // force normal mode
 
 
 }
 
 void Muca::printInfo() {
 
+/*
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(byte(0x00));
+  Wire.write(byte(MODE_TEST));
+  Wire.endTransmission(I2C_ADDRESS);
+  delay(100);
+
+
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0x4C);
+  Wire.endTransmission();
+  Wire.requestFrom(I2C_ADDRESS, 1);
+  byte tp = Wire.read();
+  Serial.print("tp:");
+  Serial.println(tp);
+
+  delay(100);
+
+
+  // Set max touchpoints
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0x4C);
+  Wire.write(byte(5));  // 0x46 = 70 // 0 to 80.
+  Wire.endTransmission(I2C_ADDRESS);
+
+
+
+  delay(100);
+
+
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0x4C);
+  Wire.endTransmission();
+  Wire.requestFrom(I2C_ADDRESS, 1);
+  tp = Wire.read();
+  Serial.print("tp:");
+  Serial.println(tp);
+
+  delay(100);
+
+
+
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0);
+  Wire.write(MODE_NORMAL);
+  Wire.endTransmission(I2C_ADDRESS);
+  delay(100);
+
+
+
+
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0);
+  Wire.write(MODE_NORMAL);
+  Wire.endTransmission(I2C_ADDRESS);
+  delay(100);
+
+
+
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0xA7);
   Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS,1);
+  Wire.requestFrom(I2C_ADDRESS, 1);
   byte state = Wire.read();
   Serial.print("state:");
   Serial.println(state);
 
 
-Serial.println("---");
-byte registers[10];
+  Serial.println("---");
+
+*/
+
+  byte registers[10];
+
+
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0x80);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS,1);
+  Wire.endTransmission(false);
+  Wire.requestFrom(I2C_ADDRESS, 1);
   registers[0] = Wire.read();
+  Wire.endTransmission(false);
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0x81);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS,1);
+  Wire.endTransmission(false);
+  Wire.requestFrom(I2C_ADDRESS, 1);
   registers[1] = Wire.read();
-
+  Wire.endTransmission(false);
 
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0x82);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS,1);
+  Wire.endTransmission(false);
+  Wire.requestFrom(I2C_ADDRESS, 1);
   registers[2] = Wire.read();
+  Wire.endTransmission(false);
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0x85); // default a0 = 160
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS,1);
+  Wire.endTransmission(false);
+  Wire.requestFrom(I2C_ADDRESS, 1);
   registers[3] = Wire.read();
+  Wire.endTransmission(false);
 
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(0xA0);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS,1);
+  Wire.endTransmission(false);
+  Wire.requestFrom(I2C_ADDRESS, 1);
   registers[4] = Wire.read();
+  Wire.endTransmission(false);
+
+
+  Serial.print("ID_G_THGROUP\t");
+  Serial.println(registers[0]);
+  Serial.print("ID_G_THPEAK\t");
+  Serial.println(registers[1]);
+  Serial.print("ID_G_THCAL\t");
+  Serial.println(registers[2]);
+  Serial.print("ID_G_THDIFF\t");
+  Serial.println(registers[3]);
+  Serial.print("AUTO_CLB_MODE\t");
+  Serial.println(registers[4]);
+
+      // Remettre en mode normal
+      delay(100);
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0xA7);
+      Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
+      Wire.endTransmission(I2C_ADDRESS);
+
+
+  /*
+      byte registers[10];
+      Wire.requestFrom(0x38, 0x80, true);
+      int register_number = 0;
+      // get all register bytes when available
+      while(Wire.available())
+      {
+        registers[register_number++] = Wire.read();
+        delay(5);
+      }
+      delay(10);
+      // Might be that the interpretation of high/low bit is not same as major/minor version...
+      Serial.print("ID_G_THGROUP\t");
+      Serial.println(registers[0]);
+      Serial.print("ID_G_THPEAK\t");
+      Serial.println(registers[1]);
+      Serial.print("ID_G_THCAL\t");
+      Serial.println(registers[2]);
+      Serial.print("ID_G_THWATER\t");
+      Serial.println(registers[3]);
+      Serial.print("ID_G_THWATER\t");
+      Serial.println(registers[4]);
+      Serial.print("ID_G_TEMP\t");
+      Serial.println(registers[5]);
+      Serial.print("ID_G_THDIFF\t");
+      Serial.println(registers[6]);
+  */
 
 
 
- Serial.print("ID_G_THGROUP\t");
-    Serial.println(registers[0]);
-    Serial.print("ID_G_THPEAK\t");
-    Serial.println(registers[1]);
-    Serial.print("ID_G_THCAL\t");
-    Serial.println(registers[2]);
-    Serial.print("ID_G_THDIFF\t");
-    Serial.println(registers[3]);
-    Serial.print("AUTO_CLB_MODE\t");
-    Serial.println(registers[4]);
-
-/*
-    byte registers[10];
-    Wire.requestFrom(0x38, 0x80, true); 
-    int register_number = 0;
-    // get all register bytes when available
-    while(Wire.available())
-    {
-      registers[register_number++] = Wire.read();
-      delay(5);
-    }
-    delay(10);
-    // Might be that the interpretation of high/low bit is not same as major/minor version...
-    Serial.print("ID_G_THGROUP\t");
-    Serial.println(registers[0]);
-    Serial.print("ID_G_THPEAK\t");
-    Serial.println(registers[1]);
-    Serial.print("ID_G_THCAL\t");
-    Serial.println(registers[2]);
-    Serial.print("ID_G_THWATER\t");
-    Serial.println(registers[3]);
-    Serial.print("ID_G_THWATER\t");
-    Serial.println(registers[4]);
-    Serial.print("ID_G_TEMP\t");
-    Serial.println(registers[5]);
-    Serial.print("ID_G_THDIFF\t");
-    Serial.println(registers[6]);
-*/
+  /*
+      byte registers[0xFE];
+      Wire.requestFrom(0x38, 0xFE);
+      int register_number = 0;
+      // get all register bytes when available
+      while(Wire.available())
+      {
+        registers[register_number++] = Wire.read();
+        delay(5);
+      }
+      delay(10);
+      // Might be that the interpretation of high/low bit is not same as major/minor version...
+      Serial.print("Library version: ");
+      Serial.print(registers[0xa1]);
+      Serial.print(".");
+      Serial.print(registers[0xa2]);
+      Serial.println(".");
 
 
 
-/*
-    byte registers[0xFE];
-    Wire.requestFrom(0x38, 0xFE); 
-    int register_number = 0;
-    // get all register bytes when available
-    while(Wire.available())
-    {
-      registers[register_number++] = Wire.read();
-      delay(5);
-    }
-    delay(10);
-    // Might be that the interpretation of high/low bit is not same as major/minor version...
-    Serial.print("Library version: ");
-    Serial.print(registers[0xa1]);
-    Serial.print(".");
-    Serial.print(registers[0xa2]);
-    Serial.println(".");
+    // dev_dbg(dev, "Report rate is %dHz\n",   ft6236_debug_read_byte(ft6236, FT6236_REG_PERIODACTIVE) * 10);
 
-
-
-// dev_dbg(dev, "Report rate is %dHz\n",   ft6236_debug_read_byte(ft6236, FT6236_REG_PERIODACTIVE) * 10);
-
-*/
+  */
 }
 
-
-void Muca::setupTrucs() {
-
-}
 
 
 void Muca::autocal() {
 
-    int error = 0;
-    unsigned char uc_temp;
-    unsigned char i ;
- 
-    Serial.println("[FTS] start auto CLB.");
-    delay(200);
-    Wire.beginTransmission(I2C_ADDRESS);
-       Wire.write(byte(0x00));
-           Wire.write(MODE_TEST);
+  int error = 0;
+  unsigned char uc_temp;
+  unsigned char i ;
+
+  Serial.println("[FTS] start auto CLB.");
+  delay(200);
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(byte(0x00));
+  Wire.write(MODE_TEST);
 
   Wire.endTransmission(I2C_ADDRESS);
-    delay(100);                       //make sure already enter factory mode
+  delay(100);                       //make sure already enter factory mode
 
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(byte(2));
+  Wire.write(0x4); // fts_i2c_write_reg(client, 2, 0x4);
+  // https://github.com/KonstaT/sailfishos_kernel_jolla_msm8930/blob/master/drivers/input/touchscreen/focaltech_ft5316_ts.c
+  Wire.endTransmission(I2C_ADDRESS);
+
+
+
+  delay(300);
+
+
+  bool done = false;
+
+
+  /*
+    u8 uc_temp = 0x00
+    if ((chip_types.chip_idh == 0x11) || (chip_types.chip_idh == 0x12)
+      || (chip_types.chip_idh == 0x13)
+      || (chip_types.chip_idh == 0x14)) {
+      for (i = 0; i < 100; i++) {
+        fts_i2c_read_reg(client, 0x02, &uc_temp);
+        if ((uc_temp == 0x02) ||
+          (uc_temp == 0xFF))
+          break;
+        msleep(20);
+      }
+    } else {
+      for (i = 0; i < 100; i++) {
+        fts_i2c_read_reg(client, 0, &uc_temp);
+        if (((uc_temp&0x70)>>4) == 0x0)
+          break;
+        msleep(20);
+      }
+    }
+
+  */
+  for (i = 0; i < 100; i++)
+  {
+    if (done) break;
     Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(byte(2));
-    Wire.write(0x4); // fts_i2c_write_reg(client, 2, 0x4);
-                      // https://github.com/KonstaT/sailfishos_kernel_jolla_msm8930/blob/master/drivers/input/touchscreen/focaltech_ft5316_ts.c
-    Wire.endTransmission(I2C_ADDRESS);
+    Wire.write(0x00);
+    //  Wire.write(0x40);
+    Wire.endTransmission();
+    //uint8_t
+    Wire.requestFrom(I2C_ADDRESS, 1);
 
+    byte reading = Wire.read();
 
-
-    delay(300);
-
-
-    bool done = false;
-
-
-/*
-u8 uc_temp = 0x00
-  if ((chip_types.chip_idh == 0x11) || (chip_types.chip_idh == 0x12)
-    || (chip_types.chip_idh == 0x13)
-    || (chip_types.chip_idh == 0x14)) {
-    for (i = 0; i < 100; i++) {
-      fts_i2c_read_reg(client, 0x02, &uc_temp);
-      if ((uc_temp == 0x02) ||
-        (uc_temp == 0xFF))
-        break;
-      msleep(20);
+    if ( ((reading & 0x70) >> 4) == 0x0)  //return to normal mode, calibration finish
+    {
+      done = true;
+      Serial.print("Calibration done!");
+      break;
     }
-  } else {
-    for (i = 0; i < 100; i++) {
-      fts_i2c_read_reg(client, 0, &uc_temp);
-      if (((uc_temp&0x70)>>4) == 0x0)
-        break;
-      msleep(20);
-    }
+
+    delay(200);
+    Serial.print("[FTS] waiting calibration ");
+    Serial.println(i);
+
   }
 
-*/
-    for(i=0;i<100;i++)
-    {
-      if(done) break;
-        Wire.beginTransmission(I2C_ADDRESS);
-        Wire.write(0x00);
-      //  Wire.write(0x40);
-        Wire.endTransmission();
-        //uint8_t 
-          Wire.requestFrom(I2C_ADDRESS,1);
+  Serial.println("[FTS] calibration OK.");
 
-       byte reading = Wire.read();
+  delay(300);
 
-        if ( ((reading & 0x70)>>4) == 0x0)    //return to normal mode, calibration finish
-        {
-           done = true;
-            Serial.print("Calibration done!");
-            break;
-        }
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0x00);
+  Wire.write(0x40);
+  error = Wire.endTransmission(I2C_ADDRESS);
 
-        delay(200);
-        Serial.print("[FTS] waiting calibration ");
-        Serial.println(i);
+  if (error != 0) Serial.print("error"); Serial.println(error);
 
-   }
- 
-    Serial.println("[FTS] calibration OK.");
- 
-    delay(300);
+  delay(100);                       //make sure already enter factory mode
 
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x00);
-    Wire.write(0x40);
-    error = Wire.endTransmission(I2C_ADDRESS);
+  Wire.beginTransmission(I2C_ADDRESS); // save
+  Wire.write(0x02);
+  Wire.write(0x5);// 0x05
+  error = Wire.endTransmission(I2C_ADDRESS);
 
-    if(error) Serial.print("error"); Serial.println(error);
+  if (error != 0) Serial.print("error"); Serial.println(error);
 
-    delay(100);                       //make sure already enter factory mode
-    
-    Wire.beginTransmission(I2C_ADDRESS); // save
-    Wire.write(0x02);
-    Wire.write(0x5);// 0x05
-    error = Wire.endTransmission(I2C_ADDRESS);
+  delay(300);
 
-    if(error) Serial.print("error"); Serial.println(error);
-
-    delay(300);
-
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x00);
-    Wire.write(0x00);
-    Wire.endTransmission(I2C_ADDRESS);
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(0x00);
+  Wire.write(0x00);
+  Wire.endTransmission(I2C_ADDRESS);
 
 
-   delay(300);
-    Serial.println("[FTS] store CLB result OK.");
+  delay(300);
+  Serial.println("[FTS] store CLB result OK.");
 }
 
 void Muca::init(bool raw = false) {
@@ -375,33 +456,49 @@ void Muca::init(bool raw = false) {
   */
 
   Wire.begin();
- // Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
-  Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+  Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+  // Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
 
 
- //TODO: mettre une erreur si ça retourne pas la bonne valeur
+  //TODO: mettre une erreur si ça retourne pas la bonne valeur
   byte initDone = -1;
   // Initialization
   if (useRaw) {
     Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(byte(MODE_TEST));
-       Wire.write(byte(0x00));
- initDone =Wire.endTransmission(I2C_ADDRESS);
+    Wire.write(byte(0x00));
+    initDone = Wire.endTransmission(I2C_ADDRESS);
+    Serial.println("Set TEST mode");
   } else {
     Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(0);
     Wire.write(MODE_NORMAL);
     initDone = Wire.endTransmission(I2C_ADDRESS);
+    Serial.println("Set NORMAL mode");
   }
 
-  if(initDone == 0) {
+  if (initDone == 0) {
     Serial.println("Muca initialized");
     delay(100);
     isInit = true;
-     delay(100);
+    delay(100);
   } else {
     Serial.println("Error while setting up Muca. Are you sure the SDA/SCL are connected?");
   }
+
+
+
+  // Set interrupt
+
+      // Interrupt
+    pinMode(CTP_INT ,INPUT);
+    #ifdef digitalPinToInterrupt
+    Serial.println("attachinterrupt");
+     attachInterrupt(digitalPinToInterrupt(CTP_INT),interruptmuca,FALLING);
+    #else
+      attachInterrupt(0,touch_interrupt,FALLING);
+    #endif   
+
 }
 
 bool Muca::updated() {
@@ -471,7 +568,7 @@ int Muca::getNumberOfTouches() {
 
 void Muca::getRawData() {
 
-  int startTime = millis();
+  // int startTime = millis();
 
   // Start scan //TODO : pas sur qu'on en a besoin
   Wire.beginTransmission(I2C_ADDRESS);
@@ -508,7 +605,7 @@ void Muca::getRawData() {
     Wire.write(byte(0x01));
     Wire.write(rowAddr);
     unsigned int st = Wire.endTransmission();
-    if (st < 0) Serial.print("i2c write failed");
+    if (st != 0) Serial.print("i2c write failed");
 
     delayMicroseconds(50);
     //  delayMicroseconds(50); // Wait at least 100us
@@ -566,23 +663,23 @@ void Muca::getRawData() {
     for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
       unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
 
-        #ifdef CALIBRATE
+#ifdef CALIBRATE
       if (calibrationSteps == CALIBRATION_MAX) {
         grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = CALIB_THRESHOLD + output - calibrateGrid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1];
       } else {
         calibrateGrid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
         grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
       }
-      #else
-        grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
-      #endif
+#else
+      grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
+#endif
     }
 
 
   } // End foreachrow
   ////////////////////////////// Serial.print("end:"); Serial.println(millis() - tt);
 
-  #ifdef CALIBRATE
+#ifdef CALIBRATE
   if (calibrationSteps != CALIBRATION_MAX) {
     if (grid[0] < 5000) return;
     if (calibrationSteps == 0) {
@@ -596,14 +693,14 @@ void Muca::getRawData() {
     Serial.println("Calibrate");
     calibrationSteps++;
   }
-  #endif
+#endif
 
 }
 
 void Muca::calibrate() {
-  #ifdef CALIBRATE
+#ifdef CALIBRATE
   calibrationSteps = 0;
-  #endif
+#endif
 }
 
 void Muca::setGain(int gain) {

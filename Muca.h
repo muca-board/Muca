@@ -23,7 +23,7 @@
 #define NUM_ROWS          21
 #define NUM_COLUMNS       12
 
-#define CALIBRATE         1
+//#define CALIBRATE         1
 #define CALIBRATION_MAX   3
 #define CALIB_THRESHOLD   0
 
@@ -61,7 +61,6 @@ class Muca {
     void setGain(int val);
     void autocal();
 
-    void setupTrucs();
     void printInfo();
     void testconfig();
     void setConfig(byte peak, byte cal, byte thresh, byte diff );
