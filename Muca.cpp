@@ -19,34 +19,6 @@ void interruptmuca() {
 Muca::Muca() {}
 
 
-void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, byte threashdiff ) {
-/*
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0xA7);
-    Wire.write(00);   // 00 true // ff false // mode 1 ne marche pas
-    Wire.endTransmission(I2C_ADDRESS);
-*/
-  Serial.println(touchdetectthresh);
-  Serial.println(touchpeak);
-  Serial.println(threshfocus);
-  Serial.println(threashdiff);
-  setRegister(0x80, touchdetectthresh, false);
-  setRegister(0x81, touchpeak, false);
-  setRegister(0x82, threshfocus, false);
-  setRegister(0x85, threashdiff, false);
-
-
-setRegister(0x00,0x00,false);
-
-
-
-}
-
-
-void Muca::testconfig() {
-
-}
-
 void Muca::readRegister(byte reg, short numberBytes) {
 
   Wire.beginTransmission(I2C_ADDRESS);
@@ -60,27 +32,32 @@ void Muca::readRegister(byte reg, short numberBytes) {
     }*/
 }
 
-byte Muca::setRegister(byte reg, byte val,bool readBack) {
+byte Muca::setRegister(byte reg, byte val) {
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
   Wire.write(val); 
-  byte r  = Wire.endTransmission(false);
 
-  if(readBack) {
-    readRegister(reg, 1);
-  }
-  return r;
+  return Wire.endTransmission(false);;
+}
+
+
+
+void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, byte threashdiff ) {
+  setRegister(0x80, touchdetectthresh);
+  setRegister(0x81, touchpeak);
+  setRegister(0x82, threshfocus);
+  setRegister(0x85, threashdiff);
+
+  setRegister(0x00,MODE_NORMAL); // DEVICE_MODE : NORMAL
 }
 
 
 void Muca::printInfo() {
 
-
   Serial.print("MODE\t");
   readRegister(0xA7, 1);
   Serial.print("\t");
-
 
   Serial.print("ID_G_THGROUP\t");
   readRegister(0x80, 1);
@@ -90,16 +67,13 @@ void Muca::printInfo() {
   readRegister(0x81, 1);
   Serial.print("\t");
 
-
   Serial.print("ID_G_THCAL\t");
   readRegister(0x82, 1);
   Serial.print("\t");
 
-
   Serial.print("ID_G_THDIFF\t");
   readRegister(0x85, 1);
   Serial.print("\t");
-
 
   Serial.print("AUTO_CLB_MODE\t");
   readRegister(0xA0, 1);
@@ -107,22 +81,7 @@ void Muca::printInfo() {
   Serial.println();
 
 
-setRegister(0x00,0x00,false);
-
-
-      // Remettre en mode normal
-   /* Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0xA7);
-    Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
-    Wire.endTransmission(I2C_ADDRESS);
-*/
-    /*
-      Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0xA7);
-    Wire.write(0x00);   // 00 true // ff false // mode 1 ne marche pas
-    Wire.endTransmission(I2C_ADDRESS);
-
-*/
+  setRegister(0x00,MODE_NORMAL);
 
 
 }
@@ -131,16 +90,11 @@ setRegister(0x00,0x00,false);
 void Muca::autocal() {
 
   int error = 0;
-  unsigned char uc_temp;
   unsigned char i ;
 
   Serial.println("[FTS] start auto CLB.");
   delay(200);
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(byte(0x00));
-  Wire.write(MODE_TEST);
-
-  Wire.endTransmission(I2C_ADDRESS);
+  setRegister(0x00,MODE_TEST);
   delay(100);                       //make sure already enter factory mode
 
   Wire.beginTransmission(I2C_ADDRESS);
@@ -150,35 +104,10 @@ void Muca::autocal() {
   Wire.endTransmission(I2C_ADDRESS);
 
 
-
   delay(300);
-
 
   bool done = false;
 
-
-  /*
-    u8 uc_temp = 0x00
-    if ((chip_types.chip_idh == 0x11) || (chip_types.chip_idh == 0x12)
-      || (chip_types.chip_idh == 0x13)
-      || (chip_types.chip_idh == 0x14)) {
-      for (i = 0; i < 100; i++) {
-        fts_i2c_read_reg(client, 0x02, &uc_temp);
-        if ((uc_temp == 0x02) ||
-          (uc_temp == 0xFF))
-          break;
-        msleep(20);
-      }
-    } else {
-      for (i = 0; i < 100; i++) {
-        fts_i2c_read_reg(client, 0, &uc_temp);
-        if (((uc_temp&0x70)>>4) == 0x0)
-          break;
-        msleep(20);
-      }
-    }
-
-  */
   for (i = 0; i < 100; i++)
   {
     if (done) break;
@@ -194,46 +123,37 @@ void Muca::autocal() {
     if ( ((reading & 0x70) >> 4) == 0x0)  //return to normal mode, calibration finish
     {
       done = true;
-      Serial.print("Calibration done!");
+      Serial.println("[Muca] Calibration done!");
       break;
     }
 
     delay(200);
-    Serial.print("[FTS] waiting calibration ");
-    Serial.println(i);
-
+    Serial.println("[Muca] Waiting calibration...");
   }
 
-  Serial.println("[FTS] calibration OK.");
+  Serial.println("[Muca] Calibration OK.");
 
   delay(300);
 
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x00);
-  Wire.write(0x40);
-  error = Wire.endTransmission(I2C_ADDRESS);
+  
+  error = setRegister(0x00,MODE_TEST);
 
-  if (error != 0) Serial.print("error"); Serial.println(error);
+  if (error != 0) { Serial.print("[Muca] Calibration Error"); Serial.println(error);}
 
   delay(100);                       //make sure already enter factory mode
 
-  Wire.beginTransmission(I2C_ADDRESS); // save
-  Wire.write(0x02);
-  Wire.write(0x5);// 0x05
-  error = Wire.endTransmission(I2C_ADDRESS);
 
-  if (error != 0) Serial.print("error"); Serial.println(error);
 
+  error = setRegister(0x02,0x5); // SAVE CALIBRATION RESULT
+
+  if (error != 0) {Serial.print("[Muca] Calibration Error"); Serial.println(error);}
   delay(300);
 
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x00);
-  Wire.write(0x00);
-  Wire.endTransmission(I2C_ADDRESS);
+  setRegister(0x00,MODE_NORMAL); 
 
 
   delay(300);
-  Serial.println("[FTS] store CLB result OK.");
+  Serial.println("[Muca] Store CLB result OK.");
 }
 
 void Muca::init(bool raw = false) {
@@ -241,15 +161,11 @@ void Muca::init(bool raw = false) {
   digitalWrite(SDA, LOW);
   digitalWrite(SCL, LOW);
 
-  // Interrupt
-  /*
-    pinMode(2 , INPUT);
-    attachInterrupt(0, interruptmuca, FALLING);
-  */
 
   Wire.begin();
   Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
   // Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+
 
 
   //TODO: mettre une erreur si ça retourne pas la bonne valeur
@@ -260,38 +176,31 @@ void Muca::init(bool raw = false) {
     Wire.write(byte(MODE_TEST));
     Wire.write(byte(0x00));
     initDone = Wire.endTransmission(I2C_ADDRESS);
-    Serial.println("Set TEST mode");
+    Serial.println("[Muca] Set TEST mode");
   } else {
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0);
-    Wire.write(MODE_NORMAL);
-    initDone = Wire.endTransmission(I2C_ADDRESS);
-    Serial.println("Set NORMAL mode");
+    initDone = setRegister(0x00,MODE_NORMAL);;
+    Serial.println("[Muca] Set NORMAL mode");
   }
 
   if (initDone == 0) {
-    Serial.println("Muca initialized");
+    Serial.println("[Muca] Initialized");
     delay(100);
     isInit = true;
     delay(100);
   } else {
-    Serial.println("Error while setting up Muca. Are you sure the SDA/SCL are connected?");
+    Serial.println("[Muca] Error while setting up Muca. Are you sure the SDA/SCL are connected?");
   }
 
-
-
-  // Set interrupt
-
-      // Interrupt
-    pinMode(CTP_INT ,INPUT);
-    #ifdef digitalPinToInterrupt
-    Serial.println("Muca::attachinterrupt");
-     attachInterrupt(digitalPinToInterrupt(CTP_INT),interruptmuca,FALLING);
-    #else
-      attachInterrupt(0,touch_interrupt,FALLING);
-    #endif   
-
+    // Interrupt
+  pinMode(CTP_INT ,INPUT);
+  #ifdef digitalPinToInterrupt
+  // Serial.println("[Muca] Attachinterrupt");
+   attachInterrupt(digitalPinToInterrupt(CTP_INT),interruptmuca,FALLING);
+  #else
+    attachInterrupt(0,touch_interrupt,FALLING);
+  #endif   
 }
+
 
 bool Muca::updated() {
   if (!isInit) return false;
@@ -496,7 +405,7 @@ void Muca::calibrate() {
 }
 
 void Muca::setGain(int gain) {
-    setRegister(0x07, byte(gain), false);
+    setRegister(0x07, byte(gain));
 }
 
 

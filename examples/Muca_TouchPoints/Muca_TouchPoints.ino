@@ -45,8 +45,6 @@ void serialEvent() {
 
 void Settings() {
   Serial.print("Received:"); Serial.println(incomingMsg);
-  Serial.print("CURRENT\t"); muca.printInfo();
-
   char *str;
   char *p = incomingMsg;
   int settings[4];
@@ -58,8 +56,6 @@ void Settings() {
   }
   incomingMsg[0] = '\0'; // Clear array
   muca.setConfig(settings[0], settings[1], settings[2], settings[3]);
-  Serial.print("NEW\t"); muca.printInfo();
-
 }
 
 
@@ -67,7 +63,6 @@ void loop() {
   GetTouch();
   delay(5);
 }
-
 
 
 void GetTouch() {

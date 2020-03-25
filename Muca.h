@@ -60,14 +60,13 @@ class Muca {
     void autocal();
 
     void printInfo();
-    void testconfig();
     void setConfig(byte peak, byte cal, byte thresh, byte diff );
 
 
     void calibrate();
 
     void readRegister(byte reg,short numberBytes);
-    byte setRegister(byte reg, byte val, bool readBack);
+    byte setRegister(byte reg, byte val);
 
   private:
     bool isInit = false;
