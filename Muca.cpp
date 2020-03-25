@@ -49,6 +49,11 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
   setRegister(0x82, threshfocus);
   setRegister(0x85, threashdiff);
 
+
+  setRegister(0xA0, 0x00); // enable auto calib
+
+
+
   setRegister(0x00,MODE_NORMAL); // DEVICE_MODE : NORMAL
 }
 
@@ -404,8 +409,16 @@ void Muca::calibrate() {
 #endif
 }
 
-void Muca::setGain(int gain) {
+void Muca::setGain(int gain, bool returnNormal) {
+    setRegister(0x00, MODE_TEST); // ENsure test mode
+    delay(100);
     setRegister(0x07, byte(gain));
+
+    if(returnNormal) {
+      setRegister(0x00, MODE_NORMAL); // ENsure test mode
+      delay(100);
+    }
+
 }
 
 

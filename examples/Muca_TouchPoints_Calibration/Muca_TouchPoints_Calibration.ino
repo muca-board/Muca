@@ -2,60 +2,9 @@
 
 Muca muca;
 
-
-
-
 void setup() {
   Serial.begin(115200);
   muca.init(); // useInterrupt ne fonctionne pas bien
-  // muca.useRaw = true;
-  // muca.setGain(100);
-  //  muca.autocal();
-  // Serial.print("CURRENT\t"); muca.printInfo();
-  // muca.autocal();
-  // muca.printInfo();
-
-  //muca.autocal();
-  //muca.printInfo();
-  //muca.testconfig();
-
-  // muca.autocal();
-}
-
-
-char incomingMsg[20];
-
-void serialEvent() {
-  int charsRead;
-  while (Serial.available() > 0) {
-    charsRead = Serial.readBytesUntil('\n', incomingMsg, sizeof(incomingMsg) - 1);
-    incomingMsg[charsRead] = '\0';  // Make it a string
-    if (incomingMsg[0] == 'a')  {
-      muca.autocal();
-    }
-    else if (incomingMsg[0] == 'i') {
-      Serial.print("CURRENT\t");
-      muca.printInfo();
-    }
-    else {
-            Settings();
-    }
-  }
-}
-
-void Settings() {
-  Serial.print("Received:"); Serial.println(incomingMsg);
-  char *str;
-  char *p = incomingMsg;
-  int settings[4];
-  byte i = 0;
-  while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
-  {
-    settings[i] = atoi(str);
-    i++;
-  }
-  incomingMsg[0] = '\0'; // Clear array
-  muca.setConfig(settings[0], settings[1], settings[2], settings[3]);
 }
 
 
@@ -87,21 +36,60 @@ void GetTouch() {
 }
 
 
-int frameCount = 0;
-float fps = 0.0F;
-float t = 0.0F;
-float prevtt = 0.0F;
+/*
+   Serial Event
+*/
 
-void GetFPS()
-{
-  frameCount++;
-  t += millis() - prevtt;
-  if (t > 1000.0f)
-  {
-    fps = frameCount;
-    frameCount = 0;
-    t = 0;
+char incomingMsg[20];
+
+void serialEvent() {
+  int charsRead;
+  while (Serial.available() > 0) {
+    charsRead = Serial.readBytesUntil('\n', incomingMsg, sizeof(incomingMsg) - 1);
+    incomingMsg[charsRead] = '\0';  // Make it a string
+    if (incomingMsg[0] == 'a')  {
+      muca.autocal();
+    }
+    else if (incomingMsg[0] == 'i') {
+      Serial.print("CURRENT\t");
+      muca.printInfo();
+    }
+    else if (incomingMsg[0] == 'g') {
+      Gain();
+    }
+    else {
+      Settings();
+    }
   }
-  prevtt = millis();
-  Serial.println(fps);
+}
+
+void Gain() {
+  Serial.print("Received:"); Serial.println(incomingMsg);
+  char *str;
+  char *p = incomingMsg;
+  byte i = 0;
+  while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
+  {
+    if(i==1 )  {
+       muca.setGain(atoi(str), true);
+    }
+     i++;
+  }
+  incomingMsg[0] = '\0'; // Clear array
+}
+
+
+void Settings() {
+  Serial.print("Received:"); Serial.println(incomingMsg);
+  char *str;
+  char *p = incomingMsg;
+  int settings[4];
+  byte i = 0;
+  while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
+  {
+    settings[i] = atoi(str);
+    i++;
+  }
+  incomingMsg[0] = '\0'; // Clear array
+  muca.setConfig(settings[0], settings[1], settings[2], settings[3]);
 }

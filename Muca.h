@@ -56,7 +56,7 @@ class Muca {
     void pollRaw();
     bool useRaw = false;
     short grid[NUM_ROWS * NUM_COLUMNS];
-    void setGain(int val);
+    void setGain(int val, bool returnNormal);
     void autocal();
 
     void printInfo();
