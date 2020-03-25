@@ -26,10 +26,20 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
     Wire.write(00);   // 00 true // ff false // mode 1 ne marche pas
     Wire.endTransmission(I2C_ADDRESS);
 */
+  Serial.println(touchdetectthresh);
+  Serial.println(touchpeak);
+  Serial.println(threshfocus);
+  Serial.println(threashdiff);
   setRegister(0x80, touchdetectthresh, false);
   setRegister(0x81, touchpeak, false);
   setRegister(0x82, threshfocus, false);
   setRegister(0x85, threashdiff, false);
+
+
+setRegister(0x00,0x00,false);
+
+
+
 }
 
 
@@ -41,30 +51,26 @@ void Muca::readRegister(byte reg, short numberBytes) {
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
-  Wire.endTransmission();
+  Wire.endTransmission(false);
   Wire.requestFrom(I2C_ADDRESS, numberBytes);
-
   Serial.print(Wire.read());
-
-/*
-    while(Wire.available())
-    {
+  /*while(Wire.available()) {
       Serial.print(Wire.read());
       Serial.print(" ");
-    }
-    */
+    }*/
 }
 
-void Muca::setRegister(byte reg, byte val,bool readBack) {
+byte Muca::setRegister(byte reg, byte val,bool readBack) {
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
   Wire.write(val); 
-  Wire.endTransmission(false);
+  byte r  = Wire.endTransmission(false);
 
   if(readBack) {
     readRegister(reg, 1);
   }
+  return r;
 }
 
 
@@ -99,6 +105,10 @@ void Muca::printInfo() {
   readRegister(0xA0, 1);
   Serial.print("\t");
   Serial.println();
+
+
+setRegister(0x00,0x00,false);
+
 
       // Remettre en mode normal
    /* Wire.beginTransmission(I2C_ADDRESS);

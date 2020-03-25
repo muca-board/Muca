@@ -3,9 +3,6 @@
 Muca muca;
 
 
-String inputString = "";         // a String to hold incoming data
-bool stringComplete = false;  // whether the string is complete
-
 
 
 void setup() {
@@ -14,7 +11,7 @@ void setup() {
   // muca.useRaw = true;
   // muca.setGain(100);
   //  muca.autocal();
- Serial.print("CURRENT\t"); muca.printInfo();
+  // Serial.print("CURRENT\t"); muca.printInfo();
   // muca.autocal();
   // muca.printInfo();
 
@@ -22,67 +19,53 @@ void setup() {
   //muca.printInfo();
   //muca.testconfig();
 
-  inputString.reserve(200);
-
+  // muca.autocal();
 }
 
 
+char incomingMsg[20];
+
 void serialEvent() {
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline, set a flag so the main loop can
-    // do something about it:
-    if (inChar == '\n') {
-      stringComplete = true;
+  int charsRead;
+  while (Serial.available() > 0) {
+    charsRead = Serial.readBytesUntil('\n', incomingMsg, sizeof(incomingMsg) - 1);
+    incomingMsg[charsRead] = '\0';  // Make it a string
+    if (incomingMsg[0] == 'a')  {
+      muca.autocal();
+    }
+    else if (incomingMsg[0] == 'i') {
+      Serial.print("CURRENT\t");
+      muca.printInfo();
+    }
+    else {
+            Settings();
     }
   }
 }
 
+void Settings() {
+  Serial.print("Received:"); Serial.println(incomingMsg);
+  Serial.print("CURRENT\t"); muca.printInfo();
+
+  char *str;
+  char *p = incomingMsg;
+  int settings[4];
+  byte i = 0;
+  while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
+  {
+    settings[i] = atoi(str);
+    i++;
+  }
+  incomingMsg[0] = '\0'; // Clear array
+  muca.setConfig(settings[0], settings[1], settings[2], settings[3]);
+  Serial.print("NEW\t"); muca.printInfo();
+
+}
 
 
 void loop() {
-
-  // print the string when a newline arrives:
-  if (stringComplete) {
-    Serial.print("Received:"); Serial.println(inputString);
-
-    Serial.print("CURRENT\t");
-    muca.printInfo();
-
-
-    int *RevertInt = getDelimeters(inputString, ":");
-    muca.setConfig(byte(RevertInt[0]), byte(RevertInt[1]), byte(RevertInt[2]), byte(RevertInt[3]));
-
-    Serial.print("NEW\t"); muca.printInfo();
-    Serial.print("NEW2\t"); muca.printInfo();
-
-    // clear the string:
-    inputString = "";
-    stringComplete = false;
-  // muca.autocal();
-  }
-
   GetTouch();
   delay(5);
-}
-
-
-int *getDelimeters(String DelString, String Delby) {
-  static int Delimeters[4];//important!!! now much delimeters;
-  int i = 0;
-  while (DelString.indexOf(Delby) >= 0) {
-    int delim = DelString.indexOf(Delby);
-    Delimeters[i] = (DelString.substring(0, delim)).toInt();
-    DelString = DelString.substring(delim + 1, DelString.length());
-    i++;
-    if (DelString.indexOf(Delby) == -1) {
-      Delimeters[i] = DelString.toInt();
-    }
-  }
-  return Delimeters;
 }
 
 

@@ -3,7 +3,6 @@
 
 // https://github.com/focaltech-systems/drivers-input-touchscreen-FTS_driver/blob/master/ft5x06.c
 
-
 #include "Wire.h"
 
 #define CTP_INT           2
@@ -12,7 +11,6 @@
 
 #define MODE_NORMAL       0x00
 #define MODE_TEST         0x40
-
 
 // NORMAL
 #define TOUCH_REGISTERS   31
@@ -23,7 +21,7 @@
 #define NUM_ROWS          21
 #define NUM_COLUMNS       12
 
-#define CALIBRATE         1
+//#define CALIBRATE         1
 #define CALIBRATION_MAX   3
 #define CALIB_THRESHOLD   0
 
@@ -69,7 +67,7 @@ class Muca {
     void calibrate();
 
     void readRegister(byte reg,short numberBytes);
-    void setRegister(byte reg, byte val, bool readBack);
+    byte setRegister(byte reg, byte val, bool readBack);
 
   private:
     bool isInit = false;
