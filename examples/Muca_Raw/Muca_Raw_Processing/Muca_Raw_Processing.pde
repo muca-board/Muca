@@ -11,7 +11,7 @@ int     PHYSICAL_H         = 94; //mm
 int     DISPLAY_W          = SKIN_COLS*30;
 int     DISPLAY_H          = SKIN_ROWS*30;
 
-int     SERIAL_PORT        = 0; //32
+int     SERIAL_PORT        = 3; //32
 int     SERIAL_RATE        = 115200;
 
 

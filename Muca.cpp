@@ -20,331 +20,102 @@ Muca::Muca() {}
 
 
 void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, byte threashdiff ) {
-
-
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0xA7);
-      Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
-      Wire.endTransmission(I2C_ADDRESS);
-
-
-
-  // range 0 to 80
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x80);
-  Wire.write(touchdetectthresh);  // 0x46 = 70 // 0 to 80.
-  Wire.endTransmission(I2C_ADDRESS);
-
-  delay(10);
-  //Valid touching detect threshold
-  //4? ID_G_THPEAK default 60
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x81);
-  Wire.write(touchpeak);  // RECOMMANDED 3C
-  Wire.endTransmission(I2C_ADDRESS);
-
-  delay(10);
-  // Touch focus threshold               ID_G_THCAL
-  // defaut 16 sensitivity in the range from 0 to 31. Note that lower values indicate higher sensitivity
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x82);
-  Wire.write(threshfocus);  // 0x1D = 29
-  Wire.endTransmission(I2C_ADDRESS);
-
-  delay(10);
-  // Touch difference threshold
-  //*16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x85);
-  Wire.write(threashdiff); // 0xA0 = 160 // deut 20
-  Wire.endTransmission(I2C_ADDRESS);
-
-
-
-  // enforce running mode
-     delay(100);
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0xA7);
-      Wire.write(byte(1));   // 00 true // ff false // mode 1 ne marche pas
-      Wire.endTransmission(I2C_ADDRESS);
-
+/*
+    Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0xA7);
+    Wire.write(00);   // 00 true // ff false // mode 1 ne marche pas
+    Wire.endTransmission(I2C_ADDRESS);
+*/
+  setRegister(0x80, touchdetectthresh, false);
+  setRegister(0x81, touchpeak, false);
+  setRegister(0x82, threshfocus, false);
+  setRegister(0x85, threashdiff, false);
 }
 
 
 void Muca::testconfig() {
 
-  Serial.println("---");
-  Serial.println("CONF");
-
-        // working mode
-        Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0xA7);
-      Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
-      Wire.endTransmission(I2C_ADDRESS);
-/*
-
-  //Valid touching detect threshold  /4 default 120/4     ID_G_THGROUP
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x80);
-  Wire.write(0x46);  // 0x46 = 70 // 0 to 80.
-  Wire.endTransmission(I2C_ADDRESS);
-
-
-  //Valid touching detect threshold   /4? ID_G_THPEAK default 60
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x81);
-  Wire.write(0x3C);  // RECOMMANDED 3C
-  Wire.endTransmission(I2C_ADDRESS);
-
-
-  // Touch focus threshold               ID_G_THCAL // defaut 16 sensitivity in the range from 0 to 31. Note that lower values indicate higher sensitivity
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x82);
-  Wire.write(0x10);  // 0x1D = 29
-  Wire.endTransmission(I2C_ADDRESS);
-
-
-  // Touch difference threshold      /16  The actual value must be 16 times of the register’s value.   ID_G_THDIFF
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x85);
-  Wire.write(0xA0); // 0xA0 = 160 // deut 20
-  Wire.endTransmission(I2C_ADDRESS);
-
-*/
-      // working mode
-  /*      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0xA7);
-      Wire.write(byte(1));   // 00 true // ff false
-      Wire.endTransmission(I2C_ADDRESS);
-*/
-
-
-  // SETUP AUTO CALIBRATION
- /* Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0xA0);
-  Wire.write(0x00);   // 00 true // ff false
-  Wire.endTransmission(I2C_ADDRESS);
-
-*/
-  /*
-      // auto calibration state
-        Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0xA7);
-      Wire.write(byte(2));   // 00 true // ff false
-      Wire.endTransmission(I2C_ADDRESS);
-
-
-      delay(1000);
-
-      // working mode
-
-  */
-    
-      delay(100);
-        Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0xA7);
-      Wire.write(byte(2));   // 00 true // ff false
-      Wire.endTransmission(I2C_ADDRESS);
-      delay(100);
-     
-  // force normal mode
-
-
 }
+
+void Muca::readRegister(byte reg, short numberBytes) {
+
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(reg);
+  Wire.endTransmission();
+  Wire.requestFrom(I2C_ADDRESS, numberBytes);
+
+  Serial.print(Wire.read());
+
+/*
+    while(Wire.available())
+    {
+      Serial.print(Wire.read());
+      Serial.print(" ");
+    }
+    */
+}
+
+void Muca::setRegister(byte reg, byte val,bool readBack) {
+
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(reg);
+  Wire.write(val); 
+  Wire.endTransmission(false);
+
+  if(readBack) {
+    readRegister(reg, 1);
+  }
+}
+
 
 void Muca::printInfo() {
 
-/*
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(byte(0x00));
-  Wire.write(byte(MODE_TEST));
-  Wire.endTransmission(I2C_ADDRESS);
-  delay(100);
 
+  Serial.print("MODE\t");
+  readRegister(0xA7, 1);
+  Serial.print("\t");
 
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x4C);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  byte tp = Wire.read();
-  Serial.print("tp:");
-  Serial.println(tp);
-
-  delay(100);
-
-
-  // Set max touchpoints
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x4C);
-  Wire.write(byte(5));  // 0x46 = 70 // 0 to 80.
-  Wire.endTransmission(I2C_ADDRESS);
-
-
-
-  delay(100);
-
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x4C);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  tp = Wire.read();
-  Serial.print("tp:");
-  Serial.println(tp);
-
-  delay(100);
-
-
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0);
-  Wire.write(MODE_NORMAL);
-  Wire.endTransmission(I2C_ADDRESS);
-  delay(100);
-
-
-
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0);
-  Wire.write(MODE_NORMAL);
-  Wire.endTransmission(I2C_ADDRESS);
-  delay(100);
-
-
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0xA7);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  byte state = Wire.read();
-  Serial.print("state:");
-  Serial.println(state);
-
-
-  Serial.println("---");
-
-*/
-
-  byte registers[10];
-
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x80);
-  Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  registers[0] = Wire.read();
-  Wire.endTransmission(false);
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x81);
-  Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  registers[1] = Wire.read();
-  Wire.endTransmission(false);
-
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x82);
-  Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  registers[2] = Wire.read();
-  Wire.endTransmission(false);
-
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0x85); // default a0 = 160
-  Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  registers[3] = Wire.read();
-  Wire.endTransmission(false);
-
-/*
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(0xA0);
-  Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, 1);
-  registers[4] = Wire.read();
-  Wire.endTransmission(false);
-*/
 
   Serial.print("ID_G_THGROUP\t");
-  Serial.print(registers[0]);
+  readRegister(0x80, 1);
   Serial.print("\t");
+
   Serial.print("ID_G_THPEAK\t");
-  Serial.print(registers[1]);
+  readRegister(0x81, 1);
   Serial.print("\t");
+
+
   Serial.print("ID_G_THCAL\t");
-  Serial.print(registers[2]);
+  readRegister(0x82, 1);
   Serial.print("\t");
+
+
   Serial.print("ID_G_THDIFF\t");
-  Serial.print(registers[3]);
-    Serial.print("\t");
-Serial.print("AUTO_CLB_MODE\t");
-  Serial.print(registers[4]);
-  Serial.println("\t");
+  readRegister(0x85, 1);
+  Serial.print("\t");
+
+
+  Serial.print("AUTO_CLB_MODE\t");
+  readRegister(0xA0, 1);
+  Serial.print("\t");
+  Serial.println();
 
       // Remettre en mode normal
-    delay(100);
    /* Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(0xA7);
     Wire.write(byte(0));   // 00 true // ff false // mode 1 ne marche pas
     Wire.endTransmission(I2C_ADDRESS);
 */
-  /*
-      byte registers[10];
-      Wire.requestFrom(0x38, 0x80, true);
-      int register_number = 0;
-      // get all register bytes when available
-      while(Wire.available())
-      {
-        registers[register_number++] = Wire.read();
-        delay(5);
-      }
-      delay(10);
-      // Might be that the interpretation of high/low bit is not same as major/minor version...
-      Serial.print("ID_G_THGROUP\t");
-      Serial.println(registers[0]);
-      Serial.print("ID_G_THPEAK\t");
-      Serial.println(registers[1]);
-      Serial.print("ID_G_THCAL\t");
-      Serial.println(registers[2]);
-      Serial.print("ID_G_THWATER\t");
-      Serial.println(registers[3]);
-      Serial.print("ID_G_THWATER\t");
-      Serial.println(registers[4]);
-      Serial.print("ID_G_TEMP\t");
-      Serial.println(registers[5]);
-      Serial.print("ID_G_THDIFF\t");
-      Serial.println(registers[6]);
-  */
+    /*
+      Wire.beginTransmission(I2C_ADDRESS);
+    Wire.write(0xA7);
+    Wire.write(0x00);   // 00 true // ff false // mode 1 ne marche pas
+    Wire.endTransmission(I2C_ADDRESS);
+
+*/
 
 
-
-  /*
-      byte registers[0xFE];
-      Wire.requestFrom(0x38, 0xFE);
-      int register_number = 0;
-      // get all register bytes when available
-      while(Wire.available())
-      {
-        registers[register_number++] = Wire.read();
-        delay(5);
-      }
-      delay(10);
-      // Might be that the interpretation of high/low bit is not same as major/minor version...
-      Serial.print("Library version: ");
-      Serial.print(registers[0xa1]);
-      Serial.print(".");
-      Serial.print(registers[0xa2]);
-      Serial.println(".");
-
-
-
-    // dev_dbg(dev, "Report rate is %dHz\n",   ft6236_debug_read_byte(ft6236, FT6236_REG_PERIODACTIVE) * 10);
-
-  */
 }
-
 
 
 void Muca::autocal() {
@@ -715,10 +486,7 @@ void Muca::calibrate() {
 }
 
 void Muca::setGain(int gain) {
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(byte(0x07));
-  Wire.write(byte(gain));
-  Wire.endTransmission();
+    setRegister(0x07, byte(gain), false);
 }
 
 

@@ -47,7 +47,7 @@ void loop() {
 
   // print the string when a newline arrives:
   if (stringComplete) {
-    Serial.print("Received:"); Serial.print(inputString);
+    Serial.print("Received:"); Serial.println(inputString);
 
     Serial.print("CURRENT\t");
     muca.printInfo();
@@ -57,11 +57,12 @@ void loop() {
     muca.setConfig(byte(RevertInt[0]), byte(RevertInt[1]), byte(RevertInt[2]), byte(RevertInt[3]));
 
     Serial.print("NEW\t"); muca.printInfo();
+    Serial.print("NEW2\t"); muca.printInfo();
 
     // clear the string:
     inputString = "";
     stringComplete = false;
-
+  // muca.autocal();
   }
 
   GetTouch();
