@@ -21,10 +21,6 @@
 #define NUM_ROWS          21
 #define NUM_COLUMNS       12
 
-//#define CALIBRATE         1
-#define CALIBRATION_MAX   3
-#define CALIB_THRESHOLD   0
-
 
 #include "Wire.h"
 
@@ -67,8 +63,6 @@ class Muca {
     bool useRaw = false;
     short grid[NUM_ROWS * NUM_COLUMNS];
 
-    void calibrate();
-
     // I2C
     byte readRegister(byte reg,short numberBytes);
     byte setRegister(byte reg, byte val);
@@ -87,9 +81,4 @@ class Muca {
 
     //RAW
     void getRawData();
-
-    #ifdef CALIBRATE
-    short calibrateGrid[NUM_ROWS * NUM_COLUMNS];
-    int calibrationSteps = 0;
-    #endif
 };

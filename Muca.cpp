@@ -44,7 +44,6 @@ byte Muca::setRegister(byte reg, byte val) {
 }
 
 
-
 void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, byte threashdiff ) {
   setRegister(0x80, touchdetectthresh);
   setRegister(0x81, touchpeak);
@@ -57,29 +56,25 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
 }
 
 
-
 void Muca::printAllRegisters() {
 
-    setRegister(0x00, MODE_NORMAL); // ENsure test mode
-   setRegister(0xA7, 0x03); // ID_G_ STATE   FACTORY
+  setRegister(0x00, MODE_NORMAL); // ENsure test mode
+  // setRegister(0xA7, 0x03); // ID_G_ STATE   FACTORY
 
-byte prev = 0;
-  Serial.println(readRegister(0xc,1));
-
-for(int i =0; i<=255;i++) {
-  Serial.print(i,HEX);
-  Serial.print("\t");
-  byte current = readRegister(byte(i),1);
-  Serial.print(current);
-  Serial.print("\tTOTALPREV\t");
-  unsigned int output = (prev << 8) | (current);
-//unsigned int output = word(prev,current);
-//Serial.print((current-1 << 8) | (prev));
-//Serial.print("\t");
-
-  Serial.println(output);
-  prev = current;
-}
+  byte prev = 0;
+  for(int i =0; i<=255;i++) {
+    Serial.print(i,HEX);
+    Serial.print("\t");
+    byte current = readRegister(byte(i),1);
+    Serial.print(current);
+    Serial.print("\tTOTALPREV\t");
+    unsigned int output = (prev << 8) | (current);
+  //unsigned int output = word(prev,current);
+  //Serial.print((current-1 << 8) | (prev));
+  //Serial.print("\t");
+    Serial.println(output);
+    prev = current;
+  }
 
 
 }
@@ -334,14 +329,9 @@ int Muca::getNumberOfTouches() {
   return numTouches;
 }
 
-////// RAW
-//void Muca::unsureTestMode() { }
-
 
 
 void Muca::getRawData() {
-
-  // int startTime = millis();
 
   // Start scan //TODO : pas sur qu'on en a besoin
   Wire.beginTransmission(I2C_ADDRESS);
@@ -387,7 +377,7 @@ void Muca::getRawData() {
 
 
     Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(byte(16)); // The address of the first column is 0x10 (16 in decimal).
+    Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
     Wire.endTransmission(false);
     Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false); // TODO : false was added IDK why
     unsigned int g = 0;
@@ -396,85 +386,14 @@ void Muca::getRawData() {
     }
 
 
-    //  V2  : Gain de FPS ?
-    /*   Wire.beginTransmission(I2C_ADDRESS);
-       for (int j = 0; j < NUM_COLUMNS; j = j + 2) {
-         Wire.write(byte(16 + NUM_COLUMNS));
-         Wire.requestFrom(I2C_ADDRESS, 2);
-         result[j] =  Wire.read();
-         result[j + 1] =  Wire.read();
-       }
-       Wire.endTransmission();
-    */
-    /*
-        // V1 = ça marche !
-        Wire.beginTransmission(I2C_ADDRESS);
-        Wire.write(byte(16)); // The address of the first column is 0x10 (16 in decimal).
-        Wire.endTransmission();
-        Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false); // TODO : falst was added IDK why
-        unsigned int g = 0;
-        while (Wire.available()) {
-          result[g++] = Wire.read();
-        }
-    */
-
-
-
-    //  V1.2 = ça marche mais meme FPS
-    /*
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(byte(16));
-      Wire.endTransmission();
-      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false);
-      unsigned int g = 0;
-      for (int j = 0; j < 2 * NUM_COLUMNS; j++) {
-      result[j] =  Wire.read();
-      }
-    */
-
-
     for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
       unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
-
-#ifdef CALIBRATE
-      if (calibrationSteps == CALIBRATION_MAX) {
-        grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = CALIB_THRESHOLD + output - calibrateGrid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1];
-      } else {
-        calibrateGrid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
-        grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
-      }
-#else
       grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
-#endif
     }
-
 
   } // End foreachrow
-  ////////////////////////////// Serial.print("end:"); Serial.println(millis() - tt);
-
-#ifdef CALIBRATE
-  if (calibrationSteps != CALIBRATION_MAX) {
-    if (grid[0] < 5000) return;
-    if (calibrationSteps == 0) {
-      memcpy(calibrateGrid, grid, sizeof(grid));
-    } else {
-      for (int i = 0; i < (NUM_ROWS * NUM_COLUMNS); i++) {
-        // calibrateGrid[i] = (calibrateGrid[i] & grid[i]) + ((calibrateGrid[i] ^ grid[i]) >> 1);
-        calibrateGrid[i] = (calibrateGrid[i] + grid[i]) / 2;
-      }
-    }
-    Serial.println("Calibrate");
-    calibrationSteps++;
-  }
-#endif
-
 }
 
-void Muca::calibrate() {
-#ifdef CALIBRATE
-  calibrationSteps = 0;
-#endif
-}
 
 void Muca::setGain(int gain, bool returnNormal) {
     setRegister(0x00, MODE_TEST); // ENsure test mode
@@ -485,7 +404,6 @@ void Muca::setGain(int gain, bool returnNormal) {
       setRegister(0x00, MODE_NORMAL); // ENsure test mode
       delay(100);
     }
-
 }
 
 
