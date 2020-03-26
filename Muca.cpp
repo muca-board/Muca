@@ -19,13 +19,15 @@ void interruptmuca() {
 Muca::Muca() {}
 
 
-void Muca::readRegister(byte reg, short numberBytes) {
+byte Muca::readRegister(byte reg, short numberBytes) {
 
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission(false);
   Wire.requestFrom(I2C_ADDRESS, numberBytes);
-  Serial.print(Wire.read());
+  byte readedValue = Wire.read();
+  return readedValue;
+  //Serial.print();
   /*while(Wire.available()) {
       Serial.print(Wire.read());
       Serial.print(" ");
@@ -49,13 +51,77 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
   setRegister(0x82, threshfocus);
   setRegister(0x85, threashdiff);
 
-
   setRegister(0xA0, 0x00); // enable auto calib
-
-
 
   setRegister(0x00,MODE_NORMAL); // DEVICE_MODE : NORMAL
 }
+
+
+
+void Muca::printAllRegisters() {
+
+    setRegister(0x00, MODE_NORMAL); // ENsure test mode
+   setRegister(0xA7, 0x03); // ID_G_ STATE   FACTORY
+
+byte prev = 0;
+  Serial.println(readRegister(0xc,1));
+
+for(int i =0; i<=255;i++) {
+  Serial.print(i,HEX);
+  Serial.print("\t");
+  byte current = readRegister(byte(i),1);
+  Serial.print(current);
+  Serial.print("\tTOTALPREV\t");
+  unsigned int output = (prev << 8) | (current);
+//unsigned int output = word(prev,current);
+//Serial.print((current-1 << 8) | (prev));
+//Serial.print("\t");
+
+  Serial.println(output);
+  prev = current;
+}
+
+
+}
+
+void Muca::setResolution(unsigned short w, unsigned short h) {
+width = w;
+height = h;
+
+
+/*
+// TODO : not working cause c'est de la merde
+delay(10);
+
+Serial.print("width_high:");readRegister(0x9c,1);      Serial.print("\t");
+Serial.print("width_low:");readRegister(0x9d,1);     Serial.print("\t");
+Serial.print("height_high:");readRegister(0x9e,1);     Serial.print("\t");
+Serial.print("height_low:");readRegister(0x9f,1);      Serial.print("\t");
+  
+  Serial.println();
+*/
+  /*
+  delay(50);
+  setRegister(0x00, MODE_NORMAL); // DEVICE_MODE : NORMAL
+  delay(50);
+  byte width_high = highByte(width);
+  byte width_low = lowByte(width);
+  byte height_high = highByte(height);
+  byte height_low = lowByte(height);
+
+
+  setRegister(0x98, width_high);
+  setRegister(0x99, width_low);
+  setRegister(0x9a, height_high);
+  setRegister(0x9b, height_low);
+  delay(10);
+  setRegister(0x00,MODE_NORMAL); // DEVICE_MODE : NORMAL
+  delay(10);
+    Serial.println("[Muca] Set Resolution");
+*/
+}
+
+
 
 
 void Muca::printInfo() {
@@ -169,8 +235,7 @@ void Muca::init(bool raw = false) {
 
   Wire.begin();
   Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
-  // Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
-
+ //  Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
 
 
   //TODO: mettre une erreur si ça retourne pas la bonne valeur
@@ -251,15 +316,17 @@ void Muca::setTouchPoints() {
     // 0 1 0 1 0 0 1 1 0
     // HIGH          LOW
     // var high = b >> 4; var low = b & 0x0F;
-
     registerIndex = (i * 6) + 3;
     touchpoints[i].flag    = touchRegisters[registerIndex] >> 6; // 0 = down, 1 = lift up, // 2 = contact // 3 = no event
-    // touchpoints[i].flag = touchRegisters[registerIndex] les deux premiers bits
     touchpoints[i].x       = word(touchRegisters[registerIndex] & 0x0f, touchRegisters[registerIndex + 1]);
     touchpoints[i].y       = word(touchRegisters[registerIndex + 2] & 0x0f, touchRegisters[registerIndex + 3]);
     touchpoints[i].id      = touchRegisters[registerIndex + 2] >> 4;
     touchpoints[i].weight  = touchRegisters[registerIndex + 4];
     touchpoints[i].area    = touchRegisters[registerIndex + 5] >> 4;
+
+    // Remap
+    touchpoints[i].x       = map(touchpoints[i].x, 0,800, 0,width);
+    touchpoints[i].y       = map(touchpoints[i].y, 0,480, 0,height);
   }
 }
 

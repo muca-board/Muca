@@ -47,29 +47,36 @@ class Muca {
 
     bool poll();
 
+    // CONFIG
+    void setGain(int val, bool returnNormal);
+    void autocal();
+    void printInfo();
+    void setConfig(byte peak, byte cal, byte thresh, byte diff);
+    void setResolution(unsigned short w, unsigned short h);
+
     // TOUCH
     bool updated();
     int getNumberOfTouches();
     TouchPoint getTouch(int i);
 
+    // TMP
+    void printAllRegisters();
+
     //RAW
     void pollRaw();
     bool useRaw = false;
     short grid[NUM_ROWS * NUM_COLUMNS];
-    void setGain(int val, bool returnNormal);
-    void autocal();
-
-    void printInfo();
-    void setConfig(byte peak, byte cal, byte thresh, byte diff );
-
 
     void calibrate();
 
-    void readRegister(byte reg,short numberBytes);
+    // I2C
+    byte readRegister(byte reg,short numberBytes);
     byte setRegister(byte reg, byte val);
 
   private:
     bool isInit = false;
+    unsigned short width = 800;
+    unsigned short height = 480;
 
     // TOUCH
     TouchPoint touchpoints[5];

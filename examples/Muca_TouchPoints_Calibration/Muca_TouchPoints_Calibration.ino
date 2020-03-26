@@ -5,6 +5,11 @@ Muca muca;
 void setup() {
   Serial.begin(115200);
   muca.init(); // useInterrupt ne fonctionne pas bien
+  // height: 93mm  - 155
+  // width:  70mm  - 90 
+  muca.setResolution(930, 700);
+ // muca.setResolution(1550, 900);
+ //muca.printAllRegisters();
 }
 
 
@@ -56,6 +61,9 @@ void serialEvent() {
     }
     else if (incomingMsg[0] == 'g') {
       Gain();
+    }
+     else if (incomingMsg[0] == 'r') {
+       muca.printAllRegisters();
     }
     else {
       Settings();
