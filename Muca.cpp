@@ -24,7 +24,7 @@ byte Muca::readRegister(byte reg, short numberBytes) {
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, numberBytes);
+  Wire.requestFrom(I2C_ADDRESS, numberBytes, false);
   byte readedValue = Wire.read();
   return readedValue;
   //Serial.print();
@@ -222,19 +222,24 @@ void Muca::autocal() {
   Serial.println("[Muca] Store CLB result OK.");
 }
 
-void Muca::init(bool raw = false) {
-  useRaw = raw;
+void Muca::init(bool inter) {
+
+useInterrupt = inter;
+  //Setup I2C
   digitalWrite(SDA, LOW);
   digitalWrite(SCL, LOW);
 
-
   Wire.begin();
-  Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
- //  Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+  // Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
+  Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
 
+Wire.setTimeout(200);
 
-  //TODO: mettre une erreur si ça retourne pas la bonne valeur
   byte initDone = -1;
+  initDone = setRegister(0x00,MODE_NORMAL);;
+  Serial.println("[Muca] Set NORMAL mode");
+
+/*
   // Initialization
   if (useRaw) {
     Wire.beginTransmission(I2C_ADDRESS);
@@ -243,9 +248,8 @@ void Muca::init(bool raw = false) {
     initDone = Wire.endTransmission(I2C_ADDRESS);
     Serial.println("[Muca] Set TEST mode");
   } else {
-    initDone = setRegister(0x00,MODE_NORMAL);;
-    Serial.println("[Muca] Set NORMAL mode");
   }
+  */
 
   if (initDone == 0) {
     Serial.println("[Muca] Initialized");
@@ -257,26 +261,36 @@ void Muca::init(bool raw = false) {
   }
 
     // Interrupt
-  pinMode(CTP_INT ,INPUT);
-  #ifdef digitalPinToInterrupt
-  // Serial.println("[Muca] Attachinterrupt");
-   attachInterrupt(digitalPinToInterrupt(CTP_INT),interruptmuca,FALLING);
-  #else
-    attachInterrupt(0,touch_interrupt,FALLING);
-  #endif   
+  if(useInterrupt) {
+      pinMode(CTP_INT ,INPUT);
+    #ifdef digitalPinToInterrupt
+    // Serial.println("[Muca] Attachinterrupt");
+     attachInterrupt(digitalPinToInterrupt(CTP_INT),interruptmuca,FALLING);
+    #else
+      attachInterrupt(0,touch_interrupt,FALLING);
+    #endif   
+  }
+
 }
 
 
 bool Muca::updated() {
   if (!isInit) return false;
-  poll();
-  if (useRaw) return true;
-
-  if (newTouch == true) {
-    newTouch = false;
+  if(!useInterrupt) {
+    getTouchData();
+    setTouchPoints();
     return true;
-  } else {
-    return false;
+  }
+  else {
+      if (newTouch == true) {
+        getTouchData();
+        setTouchPoints();
+
+        newTouch = false;
+        return true;
+      } else {
+        return false;
+      }
   }
 }
 
@@ -284,24 +298,17 @@ TouchPoint Muca::getTouch(int i) {
   return touchpoints[i];
 }
 
-bool Muca::poll() {
-  if (useRaw) {
-    getRawData();
-  } else {
-    getTouchData();
-    setTouchPoints();
-  }
-  return true;
-}
 
 void Muca::getTouchData() {
-  Wire.requestFrom(I2C_ADDRESS, TOUCH_REGISTERS);
+  byte r = Wire.requestFrom(I2C_ADDRESS, TOUCH_REGISTERS, false);
+
   int register_number = 0;
   // get all register bytes when available
-  while (Wire.available())
+  while (Wire.available() >0)
   {
     touchRegisters[register_number++] = Wire.read();
   }
+
 }
 
 void Muca::setTouchPoints() {
@@ -394,6 +401,7 @@ void Muca::getRawData() {
   } // End foreachrow
 }
 
+//The gain value ,can by  changed from 1 to 31               
 
 void Muca::setGain(int gain, bool returnNormal) {
     setRegister(0x00, MODE_TEST); // ENsure test mode

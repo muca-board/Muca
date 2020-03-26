@@ -21,11 +21,17 @@ int threashdiff = 160; //The actual value must be 16 times of the register’s v
 
 ControlP5 cp5;
 
+int x = 900;
+int y = 700;
 
+
+void settings() {
+    size(x, y);
+
+}
 
 void setup() 
 {
-  size(300, 200);
 
 
   cp5 = new ControlP5(this);
@@ -67,6 +73,8 @@ void setup()
 
   String portName = Serial.list()[3];
   myPort = new Serial(this, portName, 115200);
+  
+  set
 }
 
 

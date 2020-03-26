@@ -6,16 +6,35 @@ void setup() {
   Serial.begin(115200);
   muca.init(); // useInterrupt ne fonctionne pas bien
   // height: 93mm  - 155
-  // width:  70mm  - 90 
+  // width:  70mm  - 90
   muca.setResolution(930, 700);
- // muca.setResolution(1550, 900);
- //muca.printAllRegisters();
+  // muca.setResolution(1550, 900);
+  //muca.printAllRegisters();
 }
 
 
 void loop() {
-  GetTouch();
-  delay(5);
+  GetTouchMini();
+  // delay(5);
+}
+
+
+void GetTouchMini() {
+  if (muca.updated()) {
+    for (int i = 0; i < muca.getNumberOfTouches(); i++) {
+      Serial.print(muca.getTouch(i).id);
+      Serial.print(":");
+      Serial.print(muca.getTouch(i).flag);
+      Serial.print(":");
+      Serial.print(muca.getTouch(i).x);
+      Serial.print(":");
+      Serial.print(muca.getTouch(i).y);
+      Serial.print(":");
+      Serial.print(muca.getTouch(i).weight);
+      Serial.print("|");
+    }
+    Serial.println("");
+  }
 }
 
 
@@ -62,14 +81,34 @@ void serialEvent() {
     else if (incomingMsg[0] == 'g') {
       Gain();
     }
-     else if (incomingMsg[0] == 'r') {
-       muca.printAllRegisters();
+    else if (incomingMsg[0] == 'z') {
+      muca.printAllRegisters();
+    }
+    else if (incomingMsg[0] == 'r') {
+      Resolution();
     }
     else {
       Settings();
     }
   }
 }
+
+void Resolution() {
+  Serial.print("Received:"); Serial.println(incomingMsg);
+  char *str;
+  char *p = incomingMsg;
+  byte i = 0;
+  unsigned short x, y;
+  while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
+  {
+    if (i == 1 )  x = atoi(str);
+    if (i == 2 )  y = atoi(str);
+    i++;
+  }
+  muca.setResolution(x, y);
+  incomingMsg[0] = '\0'; // Clear array
+}
+
 
 void Gain() {
   Serial.print("Received:"); Serial.println(incomingMsg);
@@ -78,10 +117,10 @@ void Gain() {
   byte i = 0;
   while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
   {
-    if(i==1 )  {
-       muca.setGain(atoi(str), true);
+    if (i == 1 )  {
+      muca.setGain(atoi(str), true);
     }
-     i++;
+    i++;
   }
   incomingMsg[0] = '\0'; // Clear array
 }

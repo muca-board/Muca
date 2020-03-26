@@ -5,21 +5,22 @@
 
 #include "Wire.h"
 
-#define CTP_INT           2
 #define I2C_ADDRESS       0x38
-
 
 #define MODE_NORMAL       0x00
 #define MODE_TEST         0x40
 
 // NORMAL
-#define TOUCH_REGISTERS   31
+#define GESTURE           0x01
 #define STATUS            0x02
+#define TOUCH_REGISTERS   31
+#define NUM_TOUCHPOINTS   4
 
 // RAW
-
 #define NUM_ROWS          21
 #define NUM_COLUMNS       12
+
+#define CTP_INT           2
 
 
 #include "Wire.h"
@@ -39,7 +40,7 @@ class TouchPoint {
 class Muca {
   public:
     Muca();
-    void init(bool raw = false);
+    void init(bool inter = true);
 
     bool poll();
 
@@ -49,19 +50,17 @@ class Muca {
     void printInfo();
     void setConfig(byte peak, byte cal, byte thresh, byte diff);
     void setResolution(unsigned short w, unsigned short h);
+    void printAllRegisters();
+    void setNumTouchPoints();
 
     // TOUCH
     bool updated();
     int getNumberOfTouches();
     TouchPoint getTouch(int i);
 
-    // TMP
-    void printAllRegisters();
-
     //RAW
-    void pollRaw();
-    bool useRaw = false;
     short grid[NUM_ROWS * NUM_COLUMNS];
+    void getRawData();
 
     // I2C
     byte readRegister(byte reg,short numberBytes);
@@ -69,16 +68,15 @@ class Muca {
 
   private:
     bool isInit = false;
+    bool useInterrupt = true;
     unsigned short width = 800;
     unsigned short height = 480;
 
     // TOUCH
-    TouchPoint touchpoints[5];
+    TouchPoint touchpoints[NUM_TOUCHPOINTS];
     byte touchRegisters[TOUCH_REGISTERS];
     void getTouchData();
     void setTouchPoints();
     byte numTouches = 0;
 
-    //RAW
-    void getRawData();
 };
