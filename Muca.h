@@ -41,19 +41,20 @@ class TouchPoint {
 class Muca {
   public:
     Muca();
-    void init(bool inter = true);
 
-    bool poll();
+    void init(bool interupt = true);
 
-    // CONFIG
+    //CHORE
     void setGain(int val, bool returnNormal);
-    void autocal();
     void printInfo();
-    void setConfig(byte peak, byte cal, byte thresh, byte diff);
-    void setResolution(unsigned short w, unsigned short h);
+    void autocal();
     void printAllRegisters();
     void setNumTouchPoints();
     void setReportRate(unsigned short rate);
+
+    // TOUCH_CONFIG
+    void setConfig(byte peak, byte cal, byte thresh, byte diff);
+    void setResolution(unsigned short w, unsigned short h);
 
     // TOUCH
     bool updated();
@@ -62,6 +63,7 @@ class Muca {
 
     //RAW
     short grid[NUM_ROWS * NUM_COLUMNS];
+    void useRawData(bool useRaw);
     void getRawData();
 
     // I2C
@@ -69,15 +71,20 @@ class Muca {
     byte setRegister(byte reg, byte val);
 
   private:
+    //CHORE
+    bool poll();
     bool isInit = false;
     bool useInterrupt = true;
-    unsigned short width = 800;
-    unsigned short height = 480;
 
     // TOUCH
+    unsigned short width = 800;
+    unsigned short height = 480;
     TouchPoint touchpoints[NUM_TOUCHPOINTS];
     byte touchRegisters[TOUCH_REGISTERS];
     void getTouchData();
     void setTouchPoints();
     byte numTouches = 0;
+
+    //RAW
+    bool rawData = false;
 };

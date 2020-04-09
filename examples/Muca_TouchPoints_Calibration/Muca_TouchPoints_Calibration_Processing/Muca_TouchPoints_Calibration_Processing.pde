@@ -74,10 +74,17 @@ void setup()
   String portName = Serial.list()[3];
   myPort = new Serial(this, portName, 115200);
   
-  set
+  setResolution(x,y);
 }
 
+// function colorA will receive changes from 
+// controller with name colorA
+public void setResolution(int w, int h) {
+  String t= "r:" +w+":"+h+"\n";
+  println("Sending: " + t);
+  myPort.write(t);
 
+}
 // function colorA will receive changes from 
 // controller with name colorA
 public void send() {

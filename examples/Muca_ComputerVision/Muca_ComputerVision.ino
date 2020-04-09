@@ -5,9 +5,9 @@ Muca muca;
 void setup() {
   Serial.begin(115200);
 
-  muca.init(); // useInterrupt ne fonctionne pas bien
-  muca.useRaw = true;
- muca.setGain(255);
+  muca.init(); 
+  muca.useRawData(true); // If you use the raw data, the interrupt is not working
+// muca.setGain(255);
 }
 
 void loop() {
@@ -16,6 +16,7 @@ void loop() {
 
 void GetRaw() {
   if (muca.updated()) {
+    
    for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
       if (muca.grid[i] > 0) Serial.print(muca.grid[i]);
       if (i != NUM_ROWS * NUM_COLUMNS - 1)
@@ -25,24 +26,4 @@ void GetRaw() {
   }
   
  delay(1);
-}
-
-
-int frameCount = 0;
-float fps = 0.0F;
-float t = 0.0F;
-float prevtt = 0.0F;
-
-void GetFPS()
-{
-  frameCount++;
-  t += millis() - prevtt;
-  if (t > 1000.0f)
-  {
-    fps = frameCount;
-    frameCount = 0;
-    t = 0;
-  }
-  prevtt = millis();
-  Serial.println(fps);
 }

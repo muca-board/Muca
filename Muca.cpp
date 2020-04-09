@@ -222,9 +222,9 @@ void Muca::autocal() {
   Serial.println("[Muca] Store CLB result OK.");
 }
 
-void Muca::init(bool inter) {
+void Muca::init(bool interupt) {
 
-useInterrupt = inter;
+  useInterrupt = interupt;
   //Setup I2C
   digitalWrite(SDA, LOW);
   digitalWrite(SCL, LOW);
@@ -233,23 +233,12 @@ useInterrupt = inter;
   // Wire.setClock(100000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
   Wire.setClock(400000); // 400000 https://www.arduino.cc/en/Reference/WireSetClock
 
-Wire.setTimeout(200);
+  Wire.setTimeout(200);
 
   byte initDone = -1;
   initDone = setRegister(0x00,MODE_NORMAL);
   Serial.println("[Muca] Set NORMAL mode");
 
-/*
-  // Initialization
-  if (useRaw) {
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(byte(MODE_TEST));
-    Wire.write(byte(0x00));
-    initDone = Wire.endTransmission(I2C_ADDRESS);
-    Serial.println("[Muca] Set TEST mode");
-  } else {
-  }
-  */
 
   if (initDone == 0) {
     Serial.println("[Muca] Initialized");
@@ -277,17 +266,22 @@ Wire.setTimeout(200);
 
 
 bool Muca::updated() {
-  if (!isInit) return false;
+  if (!isInit)
+    return false;
+
   if(!useInterrupt) {
-    getTouchData();
-    setTouchPoints();
+    if(rawData) {
+      getRawData();
+    } else {
+      getTouchData();
+      setTouchPoints();
+    }
     return true;
   }
   else {
       if (newTouch == true) {
         getTouchData();
         setTouchPoints();
-
         newTouch = false;
         return true;
       } else {
@@ -350,7 +344,23 @@ void Muca::setReportRate(unsigned short rate) {
 }
 
 
+
+void Muca::useRawData(bool useRaw) {
+    rawData = useRaw;
+    useInterrupt = false;
+    if(isInit && useRaw) {
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(byte(MODE_TEST));
+      Wire.write(byte(0x00));
+      Wire.endTransmission(I2C_ADDRESS);
+      Serial.println("[Muca] Set TEST mode");
+  }
+}
+
+
 void Muca::getRawData() {
+
+  rawData = true;
 
   // Start scan //TODO : pas sur qu'on en a besoin
   Wire.beginTransmission(I2C_ADDRESS);
