@@ -4,36 +4,39 @@ Muca muca;
 
 void setup() {
   Serial.begin(115200);
-  muca.init(); // useInterrupt ne fonctionne pas bien
+  muca.init(true); // useInterrupt ne fonctionne pas bien
   // height: 93mm  - 155
   // width:  70mm  - 90
   muca.setResolution(930, 700);
   // muca.setResolution(1550, 900);
   //muca.printAllRegisters();
+
+ muca.setReportRate(14);
+
+   Serial.println();
+
 }
 
 
 void loop() {
   GetTouchMini();
   // delay(5);
+  Serial.println(muca.readRegister(0xA7,1));
 }
 
 
 void GetTouchMini() {
   if (muca.updated()) {
     for (int i = 0; i < muca.getNumberOfTouches(); i++) {
-      Serial.print(muca.getTouch(i).id);
-      Serial.print(":");
-      Serial.print(muca.getTouch(i).flag);
-      Serial.print(":");
-      Serial.print(muca.getTouch(i).x);
-      Serial.print(":");
-      Serial.print(muca.getTouch(i).y);
-      Serial.print(":");
+      if (i != 0)Serial.print("|");
+      Serial.print(muca.getTouch(i).id); Serial.print(":");
+      Serial.print(muca.getTouch(i).flag); Serial.print(":");
+      Serial.print(muca.getTouch(i).x); Serial.print(":");
+      Serial.print(muca.getTouch(i).y); Serial.print(":");
       Serial.print(muca.getTouch(i).weight);
-      Serial.print("|");
     }
-    Serial.println("");
+    Serial.println("|");
+
   }
 }
 

@@ -11,7 +11,6 @@
 #define MODE_TEST         0x40
 
 // NORMAL
-#define GESTURE           0x01
 #define STATUS            0x02
 #define TOUCH_REGISTERS   31
 #define NUM_TOUCHPOINTS   4
@@ -28,12 +27,14 @@
 
 class TouchPoint {
   public:
+    unsigned int id;
     unsigned int flag;
     unsigned int x;
     unsigned int y;
     unsigned int weight;
     unsigned int area;
-    unsigned int id;
+    unsigned int direction;
+    unsigned int speed;
 };
 
 
@@ -52,6 +53,7 @@ class Muca {
     void setResolution(unsigned short w, unsigned short h);
     void printAllRegisters();
     void setNumTouchPoints();
+    void setReportRate(unsigned short rate);
 
     // TOUCH
     bool updated();
@@ -78,5 +80,4 @@ class Muca {
     void getTouchData();
     void setTouchPoints();
     byte numTouches = 0;
-
 };

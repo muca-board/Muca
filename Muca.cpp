@@ -236,7 +236,7 @@ useInterrupt = inter;
 Wire.setTimeout(200);
 
   byte initDone = -1;
-  initDone = setRegister(0x00,MODE_NORMAL);;
+  initDone = setRegister(0x00,MODE_NORMAL);
   Serial.println("[Muca] Set NORMAL mode");
 
 /*
@@ -271,6 +271,8 @@ Wire.setTimeout(200);
     #endif   
   }
 
+
+  setRegister(0xA7,0x04); // Set autocalibration
 }
 
 
@@ -300,7 +302,7 @@ TouchPoint Muca::getTouch(int i) {
 
 
 void Muca::getTouchData() {
-  byte r = Wire.requestFrom(I2C_ADDRESS, TOUCH_REGISTERS, false);
+  Wire.requestFrom(I2C_ADDRESS, TOUCH_REGISTERS, false);
 
   int register_number = 0;
   // get all register bytes when available
@@ -318,17 +320,19 @@ void Muca::setTouchPoints() {
     // 0 1 0 1 0 0 1 1 0
     // HIGH          LOW
     // var high = b >> 4; var low = b & 0x0F;
-    registerIndex = (i * 6) + 3;
-    touchpoints[i].flag    = touchRegisters[registerIndex] >> 6; // 0 = down, 1 = lift up, // 2 = contact // 3 = no event
-    touchpoints[i].x       = word(touchRegisters[registerIndex] & 0x0f, touchRegisters[registerIndex + 1]);
-    touchpoints[i].y       = word(touchRegisters[registerIndex + 2] & 0x0f, touchRegisters[registerIndex + 3]);
-    touchpoints[i].id      = touchRegisters[registerIndex + 2] >> 4;
-    touchpoints[i].weight  = touchRegisters[registerIndex + 4];
-    touchpoints[i].area    = touchRegisters[registerIndex + 5] >> 4;
+    registerIndex            = (i * 6) + 3;
+    touchpoints[i].flag      = touchRegisters[registerIndex] >> 6; // 0 = down, 1 = lift up, // 2 = contact // 3 = no event
+    touchpoints[i].x         = word(touchRegisters[registerIndex] & 0x0f, touchRegisters[registerIndex + 1]);
+    touchpoints[i].y         = word(touchRegisters[registerIndex + 2] & 0x0f, touchRegisters[registerIndex + 3]);
+    touchpoints[i].id        = touchRegisters[registerIndex + 2] >> 4;
+    touchpoints[i].weight    = touchRegisters[registerIndex + 4];
+    touchpoints[i].area      = touchRegisters[registerIndex + 5] >> 4;
+    touchpoints[i].direction = touchRegisters[registerIndex + 5] >> 4;
+    touchpoints[i].speed     = touchRegisters[registerIndex + 5] >> 4;
 
     // Remap
-    touchpoints[i].x       = map(touchpoints[i].x, 0,800, 0,width);
-    touchpoints[i].y       = map(touchpoints[i].y, 0,480, 0,height);
+    touchpoints[i].x         = map(touchpoints[i].x, 0,800, 0,width);
+    touchpoints[i].y         = map(touchpoints[i].y, 0,480, 0,height);
   }
 }
 
@@ -336,6 +340,14 @@ int Muca::getNumberOfTouches() {
   return numTouches;
 }
 
+
+void Muca::setReportRate(unsigned short rate) {
+  if(rate > 14) rate = 14;
+  else if(rate < 3) rate = 3;
+
+  setRegister(0x88, rate);
+  setRegister(0x00,MODE_NORMAL);
+}
 
 
 void Muca::getRawData() {
