@@ -19,6 +19,12 @@ int threshfocus = 16; // Default: 16
 //This register describes threshold whether the coordinate is different from the original.
 int threashdiff = 160; //The actual value must be 16 times of the register’s value. Default : 128
 
+
+//Control the difference value for touching 
+int gain = 20; // 0 - 31
+
+
+
 ControlP5 cp5;
 
 int x = 900;
@@ -26,14 +32,13 @@ int y = 700;
 
 
 void settings() {
-    size(x, y);
-
+  size(x, y);
 }
 
 void setup() 
 {
 
-  
+
   //TODO : add gain
 
   cp5 = new ControlP5(this);
@@ -54,29 +59,34 @@ void setup()
     .setPosition(50, 110)
     .setRange(0, 255) ;
 
+  cp5.addSlider("gain")
+    .setPosition(50, 130)
+    .setRange(0, 31) ;
+
+
   cp5.addButton("send")
     .setValue(0)
-    .setPosition(50, 130)
+    .setPosition(50, 150)
     .setSize(100, 19)
     ;
 
 
   cp5.addButton("calib")
     .setValue(0)
-    .setPosition(50, 160)
+    .setPosition(50, 180)
     .setSize(45, 19)
     ;
-      cp5.addButton("info")
+  cp5.addButton("info")
     .setValue(0)
-    .setPosition(105, 160)
+    .setPosition(105, 180)
     .setSize(45, 19)
     ;
 
 
   String portName = Serial.list()[3];
   myPort = new Serial(this, portName, 115200);
-  
-  setResolution(x,y);
+
+  setResolution(x, y);
 }
 
 // function colorA will receive changes from 
@@ -85,7 +95,6 @@ public void setResolution(int w, int h) {
   String t= "r:" +w+":"+h+"\n";
   println("Sending: " + t);
   myPort.write(t);
-
 }
 // function colorA will receive changes from 
 // controller with name colorA
@@ -93,7 +102,11 @@ public void send() {
   String t= touchdetectthresh + ":"+ touchpeak + ":" +threshfocus+":"+threashdiff+"\n";
   println("Sending: " + t);
   myPort.write(t);
-
+  /*
+  t= "g:"+ gain+"\n";
+  println("Sending: " + t);
+  myPort.write(t);
+*/
 }
 
 public void calib() {
@@ -112,9 +125,7 @@ void draw()
   background(153);
 
 
-readSerial();
-
-
+  readSerial();
 }
 
 

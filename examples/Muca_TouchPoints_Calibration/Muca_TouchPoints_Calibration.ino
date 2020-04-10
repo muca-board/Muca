@@ -13,21 +13,19 @@ void setup() {
   // width:  70mm  - 90
   muca.setResolution(930, 700);
   // muca.setResolution(1550, 900);
-  //muca.printAllRegisters();
-
- muca.setReportRate(14);
+ // muca.printAllRegisters();
+ muca.setReportRate(6);
 
 }
 
 
 void loop() {
-  GetTouchMini();
-  // delay(5);
-  Serial.println(muca.readRegister(0xA7,1));
+  GetTouchSimple();
+  delay(5);
 }
 
 
-void GetTouchMini() {
+void GetTouchSimple() {
   if (muca.updated()) {
     for (int i = 0; i < muca.getNumberOfTouches(); i++) {
       if (i != 0)Serial.print("|");
@@ -38,7 +36,6 @@ void GetTouchMini() {
       Serial.print(muca.getTouch(i).weight);
     }
     Serial.println("|");
-
   }
 }
 
@@ -123,7 +120,7 @@ void Gain() {
   while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
   {
     if (i == 1 )  {
-      muca.setGain(atoi(str), true);
+      muca.setGain(atoi(str));
     }
     i++;
   }
