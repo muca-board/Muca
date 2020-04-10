@@ -5,7 +5,7 @@ Muca muca;
 void setup() {
   Serial.begin(115200);
   muca.init(true);
-  muca.skipLine(TX,(const short[]) {18,19,20,21}, 4);
+ // muca.skipLine(TX,(const short[]) {18,19,20,21}, 4);
   
   // height: 93mm  - 155
   // width:  70mm  - 90
@@ -40,8 +40,7 @@ void GetTouchSimple() {
 
 void GetTouch() {
   if (muca.updated()) {
-    Serial.print("NTouch:"); Serial.print(muca.getNumberOfTouches());
-    Serial.print("\t");
+    Serial.print("NTouch:"); Serial.print(muca.getNumberOfTouches());Serial.print("\t");
     for (int i = 0; i < muca.getNumberOfTouches(); i++) {
       Serial.print("Touch ");
       Serial.print(i);
