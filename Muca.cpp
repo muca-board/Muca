@@ -122,33 +122,31 @@ Serial.print("height_low:");readRegister(0x9f,1);      Serial.print("\t");
 void Muca::printInfo() {
 
   Serial.print("MODE\t");
-  readRegister(0xA7, 1);
+  Serial.print(readRegister(0xA7, 1));
   Serial.print("\t");
 
   Serial.print("ID_G_THGROUP\t");
-  readRegister(0x80, 1);
+  Serial.print(readRegister(0x80, 1));
   Serial.print("\t");
 
   Serial.print("ID_G_THPEAK\t");
-  readRegister(0x81, 1);
+  Serial.print(readRegister(0x81, 1));
   Serial.print("\t");
 
   Serial.print("ID_G_THCAL\t");
-  readRegister(0x82, 1);
+  Serial.print(readRegister(0x82, 1));
   Serial.print("\t");
 
   Serial.print("ID_G_THDIFF\t");
-  readRegister(0x85, 1);
+  Serial.print(readRegister(0x85, 1));
   Serial.print("\t");
 
   Serial.print("AUTO_CLB_MODE\t");
-  readRegister(0xA0, 1);
+  Serial.print(readRegister(0xA0, 1));
   Serial.print("\t");
   Serial.println();
 
-
   setRegister(0x00,MODE_NORMAL);
-
 
 }
 
@@ -423,7 +421,8 @@ void Muca::getRawData() {
   } // End foreachrow
 }
 
-//The gain value ,can by  changed from 1 to 31               
+//The gain value ,can by  changed from 1 to 31
+// Return to normal mode is RawData is not activated           
 void Muca::setGain(int gain) {
     setRegister(0x00, MODE_TEST); // ENsure test mode
     delay(100);
