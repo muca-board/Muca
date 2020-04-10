@@ -16,7 +16,7 @@ int     SKIN_CELLS         = SKIN_COLS * SKIN_ROWS;
 int     PHYSICAL_W         = 70; // mm
 int     PHYSICAL_H         = 94; //mm
 
-int     DISPLAY_W          = 700;
+int     DISPLAY_W          = 650;
 int     DISPLAY_H          = 700;
 
 int     SERIAL_PORT        = 3; //32
@@ -134,15 +134,56 @@ void readSkinBuffer() {
 
 
 
+boolean lowThresholdSet = false;
+
+int highestThreshold = 50;
+int prevHighestThreshold = 50; // TODO : no use of that
+int highestThresholdThisFrame = 0;
+int average = 0;
 
 void treatSkinData() {
 
+
+  if (autoThreshold) {
+
+    average = 0;
+    int averageCount = 0;
+    highestThresholdThisFrame = 0;
+    for ( int i = 0; i < SKIN_CELLS; i++ ) {
+
+      if (skinBuffer[i] > highestThreshold) {
+        if (skinBuffer[i] < highestThreshold *2) { // Be sure it's not a too big value
+          highestThreshold = skinBuffer[i];
+        }
+      }
+      if (skinBuffer[i] > highestThresholdThisFrame) {
+        highestThresholdThisFrame = skinBuffer[i];
+      }
+      if ( skinBuffer[i] <  highestThreshold/2) { // Ensure it's only the BG by anaysing if it's 
+        average += skinBuffer[i];
+        averageCount ++;
+      }
+    }
+
+    average = average / averageCount;
+    thresholdMin = average + 5; // Adding 5 to the minimum value
+
+    thresholdMax = highestThreshold-10; //int(lerp(thresholdMax, (highestThreshold + highestThresholdThisFrame) / 2.0, 0.1));
+   
+   // TODO : this is not working
+  /*  if(highestThresholdThisFrame > average * 2.5 && highestThresholdThisFrame < thresholdMax*2 && highestThresholdThisFrame < thresholdMax && prevHighestThreshold >= highestThreshold )  {
+    //  highestThreshold = round((highestThresholdThisFrame * ko) + (prevHighestThreshold * (1.0f -ko) ) ) ; 
+     highestThreshold = int(lerp(highestThreshold, (highestThreshold + highestThresholdThisFrame) / 2.0, 0.001));
+      println("lerp");
+    } 
+    prevHighestThreshold = highestThreshold;
+    */
   
-  if(autoThreshold) {
-    
+    cp5.getController("thresholdMin").setValue(thresholdMin);
+    cp5.getController("thresholdMax").setValue(thresholdMax);
   }
-  
-  
+
+
   for ( int i = 0; i < SKIN_CELLS; i++ ) {
     //int   X   = ( i % SKIN_COLS ) ;
     //int   Y   = ( i / SKIN_COLS ) ;
