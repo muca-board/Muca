@@ -79,9 +79,21 @@ void Muca::printAllRegisters() {
 
 }
 
+
+void Muca::skipLine(MucaLine line, const short lineNumber[], size_t size) {
+  Serial.print("[Muca] Adding skip line ");
+  for(int i=0; i<  size; i++ ) {
+    skippedLines[line + lineNumber[i] -1] = true; // -1 to retract the index 
+    Serial.print(line + lineNumber[i]);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+
 void Muca::setResolution(unsigned short w, unsigned short h) {
-width = w;
-height = h;
+  width = w;
+  height = h;
 
 
 /*
@@ -147,7 +159,6 @@ void Muca::printInfo() {
   Serial.println();
 
   setRegister(0x00,MODE_NORMAL);
-
 }
 
 
@@ -219,6 +230,15 @@ void Muca::autocal() {
   delay(300);
   Serial.println("[Muca] Store CLB result OK.");
 }
+
+
+
+
+
+
+
+
+
 
 void Muca::init(bool interupt) {
 

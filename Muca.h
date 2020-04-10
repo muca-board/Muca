@@ -16,8 +16,8 @@
 #define NUM_TOUCHPOINTS   4
 
 // RAW
-#define NUM_ROWS          21
 #define NUM_COLUMNS       12
+#define NUM_ROWS          21
 
 #define CTP_INT           2
 
@@ -37,13 +37,15 @@ class TouchPoint {
     unsigned int speed;
 };
 
+enum MucaLine {TX, RX = NUM_ROWS};
 
 class Muca {
   public:
     Muca();
 
     void init(bool interupt = true);
-
+    void skipLine(MucaLine line, const short lineNumber[], size_t size );
+    
     //CHORE
     void setGain(int val);
     void printInfo();
@@ -75,6 +77,7 @@ class Muca {
     bool poll();
     bool isInit = false;
     bool useInterrupt = true;
+    bool skippedLines[NUM_ROWS + NUM_COLUMNS]; // Maximum SkippedLines
 
     // TOUCH
     unsigned short width = 800;

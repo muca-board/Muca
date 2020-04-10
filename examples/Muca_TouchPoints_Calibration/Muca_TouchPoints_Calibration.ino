@@ -4,7 +4,11 @@ Muca muca;
 
 void setup() {
   Serial.begin(115200);
-  muca.init(true); // useInterrupt ne fonctionne pas bien
+  muca.init(true);
+  muca.skipLine(TX,(const short[]) {1,2,3}, 3);
+  muca.skipLine(TX,(const short[]) {18,19,20,21}, 4);
+  muca.skipLine(RX,(const short[]) {11,12}, 2 );
+  
   // height: 93mm  - 155
   // width:  70mm  - 90
   muca.setResolution(930, 700);
