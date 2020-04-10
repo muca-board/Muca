@@ -424,13 +424,14 @@ void Muca::getRawData() {
 }
 
 //The gain value ,can by  changed from 1 to 31               
-
-void Muca::setGain(int gain, bool returnNormal) {
+void Muca::setGain(int gain) {
     setRegister(0x00, MODE_TEST); // ENsure test mode
     delay(100);
     setRegister(0x07, byte(gain));
+    Serial.print("[Muca] Gain set to ");
+    Serial.println((gain));
 
-    if(returnNormal) {
+    if(!rawData) {
       setRegister(0x00, MODE_NORMAL); // ENsure test mode
       delay(100);
     }

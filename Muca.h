@@ -45,7 +45,7 @@ class Muca {
     void init(bool interupt = true);
 
     //CHORE
-    void setGain(int val, bool returnNormal);
+    void setGain(int val);
     void printInfo();
     void autocal();
     void printAllRegisters();
@@ -62,7 +62,7 @@ class Muca {
     TouchPoint getTouch(int i);
 
     //RAW
-    short grid[NUM_ROWS * NUM_COLUMNS];
+    unsigned int grid[NUM_ROWS * NUM_COLUMNS];
     void useRawData(bool useRaw);
     void getRawData();
 

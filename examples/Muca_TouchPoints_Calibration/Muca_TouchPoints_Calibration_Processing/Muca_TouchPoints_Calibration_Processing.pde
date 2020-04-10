@@ -33,6 +33,8 @@ void settings() {
 void setup() 
 {
 
+  
+  //TODO : add gain
 
   cp5 = new ControlP5(this);
 

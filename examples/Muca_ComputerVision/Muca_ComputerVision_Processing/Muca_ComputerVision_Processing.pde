@@ -19,7 +19,7 @@ int     PHYSICAL_H         = 94; //mm
 int     DISPLAY_W          = 700;
 int     DISPLAY_H          = 700;
 
-int     SERIAL_PORT        = 0; //32
+int     SERIAL_PORT        = 3; //32
 int     SERIAL_RATE        = 115200;
 
 
@@ -30,9 +30,23 @@ char    SKIN_DATA_SEP      = ',';
 
 // =========== VARIABLES ==================
 Serial  skinPort;
-int[ ]  skinBuffer;
+int[ ]  skinBuffer = new int[SKIN_CELLS]; 
 String  skinData      = null;
 boolean skinDataValid = false;
+
+
+
+// =========== FILTER ==================
+int filter = 0;
+
+
+//// Filter 1
+float k = 0.3f;
+float[ ]  filteredCol = new float[SKIN_CELLS];
+float[ ]  prevCol = new float[SKIN_CELLS];
+
+
+
 
 
 // =========== OPENCV ==================
@@ -46,10 +60,14 @@ private PImage destImg;
 
 
 
-// Serial cettings
-int thresholdMin = 0;
-int thresholdMax = 20;
+// =========== Threshold settings ==================
+boolean autoThreshold = true;
+int thresholdMin = 15;
+int thresholdMax = 70;
+int gainValue = 20;
 
+
+// Visual settings
 
 
 int resizeFactor = 30;
@@ -90,12 +108,11 @@ void setup () {
 
 
 void draw() {
-  readSkinBuffer( );
+  readSkinBuffer();
   background(200);
   if ( skinDataValid ) {
-    saveSkinImage();
+    treatSkinData();
     performCV();
-
     pushMatrix();
     translate(30, 30);
     drawCV();
@@ -114,11 +131,32 @@ void readSkinBuffer() {
   }
 }
 
-void saveSkinImage() {
+
+
+
+
+void treatSkinData() {
+
+  
+  if(autoThreshold) {
+    
+  }
+  
+  
   for ( int i = 0; i < SKIN_CELLS; i++ ) {
     //int   X   = ( i % SKIN_COLS ) ;
     //int   Y   = ( i / SKIN_COLS ) ;
     int colVal = computeColor(skinBuffer[i]); 
+
+    switch(filter) {
+    case 1:
+      float rawCol = map(constrain(skinBuffer[i], thresholdMin, thresholdMax), thresholdMin, thresholdMax, 0, 255);
+      filteredCol[i] = (rawCol * k) + (prevCol[i] * (1.0f - k) ) ;
+      colVal = color(filteredCol[i], filteredCol[i], filteredCol[i]);
+      prevCol[i] =  filteredCol[i];
+      break;
+    }
+
     skinImage.pixels[i] = colVal;
   }
   skinImage.updatePixels( );
@@ -126,10 +164,9 @@ void saveSkinImage() {
 }
 
 color computeColor( float value ) {
-  float cons =   map(constrain(value, thresholdMin, thresholdMax), thresholdMin,thresholdMax, 0, 255);
+  float cons =   map(constrain(value, thresholdMin, thresholdMax), thresholdMin, thresholdMax, 0, 255);
   return color(cons, cons, cons);
 }
-
 
 
 void performCV() {
@@ -144,7 +181,7 @@ void performCV() {
 
   if (enableThreshold) Imgproc.threshold(skinImageRezied, skinImageRezied, thresholdBlobMin, thresholdBlobMax, Imgproc.THRESH_BINARY);
 
-  
+
   opencv.toPImage(skinImageRezied, destImg); // store in Pimage for drawing later
 
   if (enableBlobDetection) {
@@ -158,7 +195,6 @@ void drawCV() {
   // Draw the final image
   image(destImg, 0, 0);
 }
-
 
 
 public void drawBlobs() {

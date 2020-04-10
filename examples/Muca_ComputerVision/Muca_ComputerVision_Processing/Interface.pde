@@ -4,25 +4,80 @@ import controlP5.*;
 ControlP5 cp5;
 Accordion accordion;
 
-RadioButton r1,rthre;
+RadioButton r1, rthre;
 
 void InterfaceSetup() {
   cp5 = new ControlP5(this);
   int x = 60;
 
-  /*
-   cp5.addSlider("thresholdBlob")
-   .setPosition(destImg.width + 20 ,30)
-   .setRange(0,255)
-   ;
-   */
 
+
+
+
+
+  ////////////////////////////////
+  //      DEFAULT SETTINGS
+  ///////////////////////////////
+  Group g5 = cp5.addGroup("Grid settings")
+    .setBackgroundColor(color(0, 64))
+    .setBackgroundHeight(150)
+    ;
+
+
+  cp5.addSlider("thresholdMin")
+    .setPosition(10, 10)
+    .setRange(0, 255)
+    .moveTo(g5)
+    ;
+
+  cp5.addSlider("thresholdMax")
+    .setPosition(10, 25)
+    .setRange(0, 255)
+    .moveTo(g5)
+    ;
+
+
+  cp5.addSlider("gainValue")
+    .setPosition(10, 40)
+    .setRange(0, 31)
+    .moveTo(g5)
+    ;
+
+  cp5.addButton("calib")
+    .setValue(0)
+    .setPosition(10, 55)
+    .setSize(45, 19)
+        .moveTo(g5)
+    ;
+      cp5.addButton("gain")
+    .setValue(0)
+    .setPosition(65, 55)
+    .setSize(45, 19)
+    .moveTo(g5)
+    ;
+
+  cp5.addSlider("filter")
+    .setPosition(10, 80)
+    .setRange(0, 5)
+    .moveTo(g5)
+    ; 
+    
+    cp5.addSlider("k")
+    .setPosition(10, 95)
+    .setRange(0, 1)
+    .moveTo(g5)
+    ;
+
+  ////////////////////////////////
+  //      COMPUTER VISION
+  ///////////////////////////////
+  
+  
   // group number 2, contains a radiobutton
   Group g0 = cp5.addGroup("Computer Vision")
     .setBackgroundColor(color(0, 64))
     .setBackgroundHeight(150)
     ;
-
 
 
   r1 = cp5.addRadioButton("imgageProcessing") // INTER_NEAREST // 1 INTER_LINEAR  // 2 INTER_CUBIC  3 // INTER_AREA  4 // INTER_LANCZOS4
@@ -57,35 +112,20 @@ void InterfaceSetup() {
     .setLabelVisible(false)
     .moveTo(g0)
     ;
-    
+
   rthre = cp5.addRadioButton("Binary")
     .setPosition(10, 60)
-    .setSize(10,10)
+    .setSize(10, 10)
     .addItem("Binary", 1)
     .activate(1)
     .moveTo(g0)
     ;
 
 
-  cp5.addSlider("thresholdMin")
-    .setPosition(10, 90)
-    .setRange(0, 255)
-    .moveTo(g0)
-    ;
 
-  cp5.addSlider("thresholdMax")
-    .setPosition(10, 100)
-    .setRange(0, 255)
-    .moveTo(g0)
-    ;
-
-
-
-
-
-
-
-  // group number 2, contains a radiobutton
+  ////////////////////////////////
+  //      BLOB DETECTION
+  ///////////////////////////////
   Group g1 = cp5.addGroup("Blob Detection")
     .setBackgroundColor(color(0, 64))
     .setBackgroundHeight(150)
@@ -101,9 +141,9 @@ void InterfaceSetup() {
     .moveTo(g1)
     ;
 
-    cp5.addTextlabel("Enable")
+  cp5.addTextlabel("Enable")
     .setText("ENABLE")
-    .setPosition(20,10).moveTo(g1);
+    .setPosition(20, 10).moveTo(g1);
 
   cp5.addSlider("thresholdBlobMin")
     .setPosition(10, 60)
@@ -125,9 +165,19 @@ void InterfaceSetup() {
     ;
 
 
+
+
+
+
+  ////////////////////////////////
+  //      ACCORDION
+  ///////////////////////////////
+  
+  
   accordion = cp5.addAccordion("acc")
     .setPosition(destImg.width + x, 30)
     .setWidth(200)
+    .addItem(g5)
     .addItem(g0)
     .addItem(g1)
     ;
@@ -137,6 +187,17 @@ void InterfaceSetup() {
   accordion.setCollapseMode(Accordion.MULTI);
 }
 
+public void calib() {
+  String t= "c\n";
+  println("Sending: " + t);
+  skinPort.write(t);
+}
+
+public void gain() {
+  String t= "g:"+gainValue+"\n";
+  println("Sending: " + t);
+  skinPort.write(t);
+}
 
 
 void controlEvent(ControlEvent theEvent) {
@@ -147,9 +208,10 @@ void controlEvent(ControlEvent theEvent) {
      }
      println("\t "+theEvent.getValue());
      */
-     if(int(theEvent.getGroup().getValue()) != -1)
-    imgageProcessing = int(theEvent.getGroup().getValue());
-  } else if(theEvent.isFrom(rthre)) {
-    if(int(theEvent.getGroup().getValue()) == 1) enableThreshold = true; else  enableThreshold = false ;
+    if (int(theEvent.getGroup().getValue()) != -1)
+      imgageProcessing = int(theEvent.getGroup().getValue());
+  } else if (theEvent.isFrom(rthre)) {
+    if (int(theEvent.getGroup().getValue()) == 1) enableThreshold = true; 
+    else  enableThreshold = false ;
   }
 }

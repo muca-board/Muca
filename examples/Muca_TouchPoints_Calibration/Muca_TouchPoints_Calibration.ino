@@ -13,8 +13,6 @@ void setup() {
 
  muca.setReportRate(14);
 
-   Serial.println();
-
 }
 
 
