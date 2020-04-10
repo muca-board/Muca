@@ -56,6 +56,23 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
 }
 
 
+
+//The gain value ,can by  changed from 1 to 31
+// Return to normal mode is RawData is not activated           
+void Muca::setGain(int gain) {
+    setRegister(0x00, MODE_TEST); // ENsure test mode
+    delay(100);
+    setRegister(0x07, byte(gain));
+    Serial.print("[Muca] Gain set to ");
+    Serial.println((gain));
+
+    if(!rawData) {
+      setRegister(0x00, MODE_NORMAL); // ENsure test mode
+      delay(100);
+    }
+}
+
+
 void Muca::printAllRegisters() {
 
   setRegister(0x00, MODE_NORMAL); // ENsure test mode
@@ -105,8 +122,9 @@ void Muca::setResolution(unsigned short w, unsigned short h) {
   width = w * NUM_ROWS / (NUM_ROWS - skippedTX);
   height = h * NUM_COLUMNS / (NUM_COLUMNS - skippedRX);;
 
-  Serial.print("[Muca] Setting dimention ");
-  if(skippedTX + skippedRX >0) Serial.print(". The dimentions are adapted with skipped lines.");
+  Serial.print("[Muca] Setting dimention");
+  if(skippedTX + skippedRX >0) Serial.print(", the dimentions are adapted with skipped lines.");
+  Serial.print(" ");
   Serial.print(width);
   Serial.print(" x ");
   Serial.print(height);
@@ -250,11 +268,6 @@ void Muca::autocal() {
 
 
 
-
-
-
-
-
 void Muca::init(bool interupt) {
 
   useInterrupt = interupt;
@@ -323,6 +336,14 @@ bool Muca::updated() {
   }
 }
 
+
+
+
+//////////////////////////////
+//    TOUCH POINT DATA
+//////////////////////////////
+
+
 TouchPoint Muca::getTouch(int i) {
   return touchpoints[i];
 }
@@ -377,6 +398,11 @@ void Muca::setReportRate(unsigned short rate) {
 }
 
 
+
+
+//////////////////////////////
+//        RAW DATA
+//////////////////////////////
 
 void Muca::useRawData(bool useRaw) {
     rawData = useRaw;
@@ -454,21 +480,6 @@ void Muca::getRawData() {
     }
 
   } // End foreachrow
-}
-
-//The gain value ,can by  changed from 1 to 31
-// Return to normal mode is RawData is not activated           
-void Muca::setGain(int gain) {
-    setRegister(0x00, MODE_TEST); // ENsure test mode
-    delay(100);
-    setRegister(0x07, byte(gain));
-    Serial.print("[Muca] Gain set to ");
-    Serial.println((gain));
-
-    if(!rawData) {
-      setRegister(0x00, MODE_NORMAL); // ENsure test mode
-      delay(100);
-    }
 }
 
 
