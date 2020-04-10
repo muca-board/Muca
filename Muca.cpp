@@ -76,13 +76,12 @@ void Muca::printAllRegisters() {
     prev = current;
   }
 
-
 }
 
 
 void Muca::skipLine(MucaLine line, const short lineNumber[], size_t size) {
   Serial.print("[Muca] Adding skip line ");
-  for(int i=0; i<  size; i++ ) {
+  for(short i=0; i<  size; i++ ) {
     skippedLines[line + lineNumber[i] -1] = true; // -1 to retract the index 
     Serial.print(line + lineNumber[i]);
     Serial.print(" ");
@@ -92,10 +91,26 @@ void Muca::skipLine(MucaLine line, const short lineNumber[], size_t size) {
 
 
 void Muca::setResolution(unsigned short w, unsigned short h) {
-  width = w;
-  height = h;
 
+  //The resolution is adapted regarding the skiped lines
+  short skippedTX = 0;
+  short skippedRX = 0;
 
+  for(short i=0; i<  NUM_ROWS; i++ )
+   if(skippedLines[i] == true) skippedTX++;
+
+  for(short i=NUM_ROWS; i< NUM_ROWS + NUM_COLUMNS ; i++ )
+    if(skippedLines[i] == true) skippedRX++;
+
+  width = w * NUM_ROWS / (NUM_ROWS - skippedTX);
+  height = h * NUM_COLUMNS / (NUM_COLUMNS - skippedRX);;
+
+  Serial.print("[Muca] Setting dimention ");
+  if(skippedTX + skippedRX >0) Serial.print(". The dimentions are adapted with skipped lines.");
+  Serial.print(width);
+  Serial.print(" x ");
+  Serial.print(height);
+  Serial.println();
 /*
 // TODO : not working cause c'est de la merde
 delay(10);
