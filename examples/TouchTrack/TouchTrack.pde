@@ -6,6 +6,9 @@ char val;      // Data received from the serial port
 
 
 
+// initialize a touch tracker with 5 touch points
+TouchTracker touchTracker = new TouchTracker(5); 
+
 
 void setup() {
   size(900, 700);
@@ -14,14 +17,24 @@ void setup() {
   myPort = new Serial(this, portName, 115200);
 
   setResolution(900, 700);
+  
+  
+  touchTracker.removeAfterDelay = true;
 }
 
 
 void draw()
 {
   background(153);
-
   readSerial();
+
+
+  touchTracker.update();
+
+
+  for (int i = 0; i < touchTracker.touchCount(); i++) {
+    touchTracker.GetTouch(i).draw();
+  }
 }
 
 
@@ -48,31 +61,28 @@ void readSerial() {
 void ParseTouchPoints(String data) {
   println(data);
 
-  // Parse New Data
   String[] newTouchPoints = split(data, '|');
-  ArrayList<Integer> activeHardwareId = new ArrayList<Integer>();
-
+  
   for (int i =0; i < newTouchPoints.length; i++) {
     String[] touchData = split(newTouchPoints[i], ':');
 
     if (touchData.length == 5) {
-      int id = Integer.parseInt(touchData[0]);
-      int x = Integer.parseInt(touchData[2]);
-      int y = Integer.parseInt(touchData[3]);
-      int w = Integer.parseInt(touchData[4]);
-      //  touchPoints[id].Update(x, y, w);
-      activeHardwareId.add(id);
+      PVector pos =  new PVector( Integer.parseInt(touchData[2]), Integer.parseInt(touchData[3]));
+      touchTracker.UpdateTouchPosition(pos, Integer.parseInt(touchData[4]));
     }
   }
+  
+  
+  touchtracker.EndUpdate();
 }
 
-
+// send commands
 public void setResolution(int w, int h) {
   String t= "r:" +w+":"+h+"\n";
   println("Sending: " + t);
   myPort.write(t);
-  
-  
+
+
   t= "g:10\n";
   println("Sending gain: " + t);
   myPort.write(t);
