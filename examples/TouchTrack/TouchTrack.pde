@@ -4,8 +4,6 @@ Serial myPort;  // Create object from Serial class
 char val;      // Data received from the serial port
 
 
-
-
 // initialize a touch tracker with 5 touch points
 TouchTracker touchTracker = new TouchTracker(5); 
 
@@ -17,8 +15,8 @@ void setup() {
   myPort = new Serial(this, portName, 115200);
 
   setResolution(900, 700);
-  
-  
+
+
   touchTracker.removeAfterDelay = true;
 }
 
@@ -28,17 +26,12 @@ void draw()
   background(153);
   readSerial();
 
-
-  touchTracker.update();
-
-
   for (int i = 0; i < touchTracker.touchCount(); i++) {
     touchTracker.GetTouch(i).draw();
   }
+
+  touchTracker.update();
 }
-
-
-
 
 
 
@@ -62,7 +55,7 @@ void ParseTouchPoints(String data) {
   println(data);
 
   String[] newTouchPoints = split(data, '|');
-  
+
   for (int i =0; i < newTouchPoints.length; i++) {
     String[] touchData = split(newTouchPoints[i], ':');
 
@@ -71,9 +64,8 @@ void ParseTouchPoints(String data) {
       touchTracker.UpdateTouchPosition(pos, Integer.parseInt(touchData[4]));
     }
   }
-  
-  
-  touchtracker.EndUpdate();
+
+  touchTracker.EndUpdate();
 }
 
 // send commands
