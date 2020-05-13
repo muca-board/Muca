@@ -2,10 +2,6 @@
 
 Muca muca;
 
-#define CALIBRATION_STEPS 20
-short currentCalibrationStep = 0;
-unsigned int calibrationGrid[NUM_ROWS * NUM_COLUMNS];
-
 void setup() {
   Serial.begin(115200);
  // muca.skipLine(TX, (const short[]) { 1, 2, 3, 4 }, 4);
@@ -13,6 +9,9 @@ void setup() {
   // muca.skipLine(RX,(const short[]) {11,12}, 2);
   muca.init();
   muca.useRawData(true); // If you use the raw data, the interrupt is not working
+
+  delay(50);
+  muca.setGain(10);
 }
 
 void loop() {
@@ -34,7 +33,6 @@ void SendRawString() {
   Serial.println();
 
 }
-
 
 
 void SendRawByte() {
@@ -64,57 +62,4 @@ void SendRawByte() {
    Serial.write(rawByteValues, 254);
    Serial.flush();
   //Serial.println();
-}
-
-
-char incomingMsg[20];
-
-void serialEvent() {
-  int charsRead;
-  while (Serial.available() > 0) {
-    charsRead = Serial.readBytesUntil('\n', incomingMsg, sizeof(incomingMsg) - 1);
-    incomingMsg[charsRead] = '\0';  // Make it a string
-    if (incomingMsg[0] == 'g') {
-      Gain();
-    }
-    else if (incomingMsg[0] == 'c') {
-      currentCalibrationStep = 0;
-    }
-  }
-}
-int frameCount = 0;
-float fps = 0.0F;
-float t = 0.0F;
-float prevtt = 0.0F;
-
-void GetFPS()
-{
-  frameCount++;
-  t += millis() - prevtt;
-  if (t > 1000.0f)
-  {
-    fps = frameCount;
-    frameCount = 0;
-    t = 0;
-  }
-  prevtt = millis();
-  Serial.println(fps);
-  Serial.println(fps);
-  Serial.println(fps);
-  Serial.println(fps);
-}
-
-void Gain() {
-  Serial.print("Received:"); Serial.println(incomingMsg);
-  char *str;
-  char *p = incomingMsg;
-  byte i = 0;
-  while ((str = strtok_r(p, ":", &p)) != NULL)  // Don't use \n here it fails
-  {
-    if (i == 1 )  {
-      muca.setGain(atoi(str));
-    }
-    i++;
-  }
-  incomingMsg[0] = '\0'; // Clear array
 }

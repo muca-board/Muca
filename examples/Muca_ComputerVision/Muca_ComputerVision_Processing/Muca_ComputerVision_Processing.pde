@@ -61,7 +61,7 @@ private PImage destImg;
 
 
 // =========== Threshold settings ==================
-boolean autoThreshold = true;
+boolean autoThreshold = false; //  Auto threshold is not working well when there are skipped lines
 int thresholdMin = 15;
 int thresholdMax = 70;
 int gainValue = 20;

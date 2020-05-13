@@ -8,6 +8,8 @@ unsigned int calibrationGrid[NUM_ROWS * NUM_COLUMNS];
 
 void setup() {
   Serial.begin(115200);
+  //muca.skipLine(TX,(const short[]) {18,19,20,21}, 4);
+
 
   muca.init();
   muca.useRawData(true); // If you use the raw data, the interrupt is not working
@@ -38,14 +40,12 @@ void GetRaw() {
       }
         currentCalibrationStep++;
         Serial.print("Calibration performed "); Serial.print(currentCalibrationStep); Serial.print("/"); Serial.println(CALIBRATION_STEPS);
-
     }
 
   } // End Muca Updated
 
   delay(1);
 }
-
 
 
 
@@ -64,7 +64,6 @@ void serialEvent() {
     }
   }
 }
-
 
 
 void Gain() {
