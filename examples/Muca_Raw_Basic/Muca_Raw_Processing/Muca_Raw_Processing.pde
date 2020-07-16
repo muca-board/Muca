@@ -18,6 +18,10 @@ int[ ]  skinBuffer;
 int[ ]  skinBufferCalibration = null;
 PImage  skinImage     = createImage( SKIN_COLS, SKIN_ROWS, RGB );
 
+// =========== DISPLAY ==================
+
+int minThreshold = 0;
+int maxThreshold = 200;
 
 
 
@@ -29,7 +33,6 @@ void settings () {
 void setup () { 
   noStroke( );
   printArray(Serial.list());
-  
   
   skinPort = new Serial( this, Serial.list( )[ SERIAL_PORT ], SERIAL_RATE );
 
@@ -89,7 +92,6 @@ void readDataAsByte() {
 
   inBuffer = skinPort.readBytes(SKIN_CELLS+2);
   //  skinPort.readBytes(inBuffer);
-  println(inBuffer.length);
   if (inBuffer.length == SKIN_CELLS+2) {
     byte lowByteMinimum = inBuffer[1];
     byte highByteMinimum = inBuffer[0];
@@ -112,7 +114,7 @@ void saveSkinImage() {
   }
   for ( int i = 0; i < SKIN_CELLS; i++ ) {
     int colVal = skinBuffer[i] - skinBufferCalibration[i];  // substract calibration matrix
-    float cons =   map(constrain(colVal, 0, 100), 0, 100, 0, 255);
+    float cons =   map(constrain(colVal, minThreshold, maxThreshold), minThreshold, maxThreshold, 0, 255);
     color c = color(cons, cons, cons);
     skinImage.pixels[i] = c;
   }

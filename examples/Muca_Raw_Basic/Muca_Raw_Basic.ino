@@ -5,19 +5,19 @@ Muca muca;
 void setup() {
   Serial.begin(115200);
  // muca.skipLine(TX, (const short[]) { 1, 2, 3, 4 }, 4);
-//  muca.skipLine(TX, (const short[]) { 18, 19, 20, 21 }, 4);
+  //muca.skipLine(TX, (const short[]) { 14,15,16,17, 18, 19, 20, 21 }, 8);
   // muca.skipLine(RX,(const short[]) {11,12}, 2);
   muca.init();
   muca.useRawData(true); // If you use the raw data, the interrupt is not working
 
   delay(50);
-  muca.setGain(10);
+  muca.setGain(2);
 }
 
 void loop() {
   if (muca.updated()) {
-  //  SendRawString();
-     SendRawByte(); // Faster
+    SendRawString();
+    // SendRawByte(); // Faster
   }
   delay(16); // waiting 16ms for 60fps
 
