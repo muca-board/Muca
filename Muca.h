@@ -22,8 +22,7 @@
 #define CTP_INT           2
 
 
-#include "Wire.h"
-
+#define byte uint8_t
 
 class TouchPoint {
   public:

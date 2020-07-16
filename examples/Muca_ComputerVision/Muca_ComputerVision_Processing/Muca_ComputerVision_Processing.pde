@@ -61,7 +61,7 @@ private PImage destImg;
 
 
 // =========== Threshold settings ==================
-boolean autoThreshold = true;
+boolean autoThreshold = false; //  Auto threshold is not working well when there are skipped lines
 int thresholdMin = 15;
 int thresholdMax = 70;
 int gainValue = 20;
@@ -205,7 +205,9 @@ void treatSkinData() {
 }
 
 color computeColor( float value ) {
-  float cons =   map(constrain(value, thresholdMin, thresholdMax), thresholdMin, thresholdMax, 0, 255);
+    if(value > thresholdMax+40) value = 0;
+  float c = constrain(value, thresholdMin, thresholdMax);
+  float cons =   map(c, thresholdMin, thresholdMax, 0, 255);
   return color(cons, cons, cons);
 }
 

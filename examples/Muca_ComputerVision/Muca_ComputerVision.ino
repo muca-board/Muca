@@ -7,7 +7,6 @@ void setup() {
 
   muca.init(); 
   muca.useRawData(true); // If you use the raw data, the interrupt is not working
-// muca.setGain(255);
 }
 
 void loop() {

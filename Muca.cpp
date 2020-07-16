@@ -97,6 +97,10 @@ void Muca::printAllRegisters() {
 
 
 void Muca::skipLine(MucaLine line, const short lineNumber[], size_t size) {
+  // How Skip line works :
+  // The TX lines are stored from zero to  NUM_COLUMNS (12)
+  // The RX lines are stores from NUM_ROWS (21) to end
+  // To retrieve, if(skippedLines[i] == true) 
   Serial.print("[Muca] Adding skip line ");
   for(short i=0; i<  size; i++ ) {
     skippedLines[line + lineNumber[i] -1] = true; // -1 to retract the index 
@@ -445,39 +449,49 @@ void Muca::getRawData() {
   }
 
 
-  ////////////////////////////// Serial.print("startread:");  int tt = millis();  Serial.print(tt);
   // Read Data
   for (unsigned int rowAddr = 0; rowAddr < NUM_ROWS; rowAddr++) {
 
-    byte result[2  * NUM_COLUMNS];
+    if(skippedLines[rowAddr] == true)  // if the line is marked as skipped, don't write it
+    {
+       for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
+        grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = 0;
+        }
+    } else {
+      byte result[2  * NUM_COLUMNS];
 
-    //Start transmission
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(byte(0x01));
-    Wire.write(rowAddr);
-    unsigned int st = Wire.endTransmission();
-    if (st != 0) Serial.print("i2c write failed");
+      //Start transmission
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(byte(0x01));
+      Wire.write(rowAddr);
+      unsigned int st = Wire.endTransmission();
+      if (st != 0) Serial.print("i2c write failed");
 
-    delayMicroseconds(50);
-    //  delayMicroseconds(50); // Wait at least 100us
-    //delay(10);
-
-
-
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
-    Wire.endTransmission(false);
-    Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false); // TODO : false was added IDK why
-    unsigned int g = 0;
-    while (Wire.available()) {
-      result[g++] = Wire.read();
-    }
+      delayMicroseconds(50);
+      //  delayMicroseconds(50); // Wait at least 100us
+      //delay(10);
 
 
-    for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
-      unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
-      grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
-    }
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
+      Wire.endTransmission(false);
+      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false); // TODO : false was added IDK why
+      unsigned int g = 0;
+      while (Wire.available()) {
+        result[g++] = Wire.read();
+      }
+
+
+      for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
+        if(skippedLines[NUM_ROWS + col] == true)  {
+            grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = 0;
+        } else {
+          unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
+          grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
+        }
+      }
+
+    } // End if line is skipped
 
   } // End foreachrow
 }
