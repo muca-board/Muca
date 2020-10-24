@@ -16,8 +16,8 @@
 #define NUM_TOUCHPOINTS   4
 
 // RAW
-#define NUM_COLUMNS       12
-#define NUM_ROWS          21
+#define NUM_COLUMNS       12 // Columns are doing the sensing
+#define NUM_ROWS          21// Row are doing the pull ground
 
 #define CTP_INT           2
 
@@ -66,6 +66,7 @@ class Muca {
     unsigned int grid[NUM_ROWS * NUM_COLUMNS];
     void useRawData(bool useRaw);
     void getRawData();
+    unsigned int getRawData(int col, int row);
 
     // I2C
     byte readRegister(byte reg,short numberBytes);

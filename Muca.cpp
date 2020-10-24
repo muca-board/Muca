@@ -487,13 +487,128 @@ void Muca::getRawData() {
             grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = 0;
         } else {
           unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
-          grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output;
+          grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output; // We invert because the pinout is inverted
         }
       }
 
     } // End if line is skipped
 
   } // End foreachrow
+}
+
+unsigned int Muca::getRawData(int col, int row) {
+
+  newTouch = true;
+  rawData = true;
+
+  unsigned int data = 0;
+
+  if(col == 0 || row == 0) {
+    Serial.print(F("The column or raw number must be higher than 0"));
+    return 0;
+  }
+
+  // Start scan //TODO : pas sur qu'on en a besoin
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(byte(0x00));
+  Wire.write(byte(0xc0));
+  Wire.endTransmission();
+
+    delayMicroseconds(50);
+
+
+  //Wait for scan complete
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(byte(0x00));
+  Wire.endTransmission();
+  int reading = 0;
+  while (1) {
+    Wire.requestFrom(I2C_ADDRESS, 1);
+    if (Wire.available()) {
+      reading = Wire.read();
+      int high_bit = (reading & (1 << 7));
+      if (high_bit == 0) {
+        break;
+      }
+    }
+  }
+
+
+  
+/*
+
+
+  // Read Data
+  for (unsigned int rowAddr = y-1; rowAddr <= y; rowAddr++) {
+
+      byte result[2  * NUM_COLUMNS];
+
+      //Start transmission
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(byte(0x01));
+      Wire.write(rowAddr);
+      unsigned int st = Wire.endTransmission();
+      if (st != 0) Serial.print("i2c write failed");
+
+      delayMicroseconds(50);
+      //  delayMicroseconds(50); // Wait at least 100us
+      //delay(10);
+
+
+      Wire.beginTransmission(I2C_ADDRESS);
+      Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
+      Wire.endTransmission(false);
+      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false); // TODO : false was added IDK why
+      unsigned int g = 0;
+      while (Wire.available()) {
+        result[g++] = Wire.read();
+      }
+
+
+      for (unsigned int col = x-1; col <= x; col++) {
+          unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
+          data = output;
+          grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output; // We invert because the pinout is inverted
+      }
+
+  } // End foreachrow
+
+*/
+/*
+  Serial.print(colAddr);
+  Serial.print("-");
+  Serial.print(rowAddr);
+    Serial.print("-");
+*/
+
+
+// Read Data
+  int colAddr =   NUM_COLUMNS - (col-1) -1; // We invert because the pinout is inverted
+  int rowAddr =   (row-1);
+
+  byte result[2];
+  //Start transmission
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(byte(0x01));
+  Wire.write(rowAddr);
+  unsigned int st = Wire.endTransmission();
+  if (st != 0) Serial.print("i2c write failed");
+
+  delayMicroseconds(50);
+
+  Wire.beginTransmission(I2C_ADDRESS);
+ // Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
+  Wire.write(byte(0x10) + colAddr*2); 
+  Wire.endTransmission(false);
+  Wire.requestFrom(I2C_ADDRESS, 2, false); // TODO : false was added IDK why
+  unsigned int g = 0;
+  while (Wire.available()) {
+    result[g++] = Wire.read();
+  }
+
+  data = (result[0] << 8) | (result[1]);
+
+  return data;
 }
 
 
