@@ -403,7 +403,6 @@ void Muca::setReportRate(unsigned short rate) {
 
 
 
-
 //////////////////////////////
 //        RAW DATA
 //////////////////////////////
@@ -412,10 +411,7 @@ void Muca::useRawData(bool useRaw) {
     rawData = useRaw;
     useInterrupt = false;
     if(isInit && useRaw) {
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(byte(MODE_TEST));
-      Wire.write(byte(0x00));
-      Wire.endTransmission(I2C_ADDRESS);
+      setRegister(0x00,MODE_TEST);
       Serial.println("[Muca] Set TEST mode");
   }
 }
@@ -425,11 +421,15 @@ void Muca::getRawData() {
 
   rawData = true;
 
+/*
   // Start scan //TODO : pas sur qu'on en a besoin
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(byte(0x00));
   Wire.write(byte(0xc0));
   Wire.endTransmission();
+
+  //Wait for scan complete
+  // Start scan //TODO : pas sur qu'on en a besoin
 
 
   //Wait for scan complete
@@ -447,6 +447,10 @@ void Muca::getRawData() {
       }
     }
   }
+*/
+
+    // setRegister(byte(0x00),byte(0xc0));
+     setRegister(byte(0x00),byte(0xc0)); // I have no idea what it's doing
 
 
   // Read Data
@@ -464,7 +468,7 @@ void Muca::getRawData() {
       Wire.beginTransmission(I2C_ADDRESS);
       Wire.write(byte(0x01));
       Wire.write(rowAddr);
-      unsigned int st = Wire.endTransmission();
+      unsigned int st = Wire.endTransmission(false);
       if (st != 0) Serial.print("i2c write failed");
 
       delayMicroseconds(50);
@@ -508,78 +512,7 @@ unsigned int Muca::getRawData(int col, int row) {
     return 0;
   }
 
-  // Start scan //TODO : pas sur qu'on en a besoin
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(byte(0x00));
-  Wire.write(byte(0xc0));
-  Wire.endTransmission();
-
-    delayMicroseconds(50);
-
-
-  //Wait for scan complete
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(byte(0x00));
-  Wire.endTransmission();
-  int reading = 0;
-  while (1) {
-    Wire.requestFrom(I2C_ADDRESS, 1);
-    if (Wire.available()) {
-      reading = Wire.read();
-      int high_bit = (reading & (1 << 7));
-      if (high_bit == 0) {
-        break;
-      }
-    }
-  }
-
-
-  
-/*
-
-
-  // Read Data
-  for (unsigned int rowAddr = y-1; rowAddr <= y; rowAddr++) {
-
-      byte result[2  * NUM_COLUMNS];
-
-      //Start transmission
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(byte(0x01));
-      Wire.write(rowAddr);
-      unsigned int st = Wire.endTransmission();
-      if (st != 0) Serial.print("i2c write failed");
-
-      delayMicroseconds(50);
-      //  delayMicroseconds(50); // Wait at least 100us
-      //delay(10);
-
-
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
-      Wire.endTransmission(false);
-      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false); // TODO : false was added IDK why
-      unsigned int g = 0;
-      while (Wire.available()) {
-        result[g++] = Wire.read();
-      }
-
-
-      for (unsigned int col = x-1; col <= x; col++) {
-          unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
-          data = output;
-          grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output; // We invert because the pinout is inverted
-      }
-
-  } // End foreachrow
-
-*/
-/*
-  Serial.print(colAddr);
-  Serial.print("-");
-  Serial.print(rowAddr);
-    Serial.print("-");
-*/
+  setRegister(byte(0x00),byte(0xc0)); // I have no idea what it's doing
 
 
 // Read Data
