@@ -79,6 +79,7 @@ void Muca::printAllRegisters() {
   // setRegister(0xA7, 0x03); // ID_G_ STATE   FACTORY
 
   byte prev = 0;
+  Serial.print("[Muca] ");
   for(int i =0; i<=255;i++) {
     Serial.print(i,HEX);
     Serial.print("\t");
@@ -92,7 +93,6 @@ void Muca::printAllRegisters() {
     Serial.println(output);
     prev = current;
   }
-
 }
 
 
@@ -170,27 +170,27 @@ Serial.print("height_low:");readRegister(0x9f,1);      Serial.print("\t");
 
 void Muca::printInfo() {
 
-  Serial.print("MODE\t");
+  Serial.print("[Muca] MODE\t");
   Serial.print(readRegister(0xA7, 1));
   Serial.print("\t");
 
-  Serial.print("ID_G_THGROUP\t");
+  Serial.print("[Muca] ID_G_THGROUP\t");
   Serial.print(readRegister(0x80, 1));
   Serial.print("\t");
 
-  Serial.print("ID_G_THPEAK\t");
+  Serial.print("[Muca] ID_G_THPEAK\t");
   Serial.print(readRegister(0x81, 1));
   Serial.print("\t");
 
-  Serial.print("ID_G_THCAL\t");
+  Serial.print("[Muca] ID_G_THCAL\t");
   Serial.print(readRegister(0x82, 1));
   Serial.print("\t");
 
-  Serial.print("ID_G_THDIFF\t");
+  Serial.print("[Muca] ID_G_THDIFF\t");
   Serial.print(readRegister(0x85, 1));
   Serial.print("\t");
 
-  Serial.print("AUTO_CLB_MODE\t");
+  Serial.print("[Muca] AUTO_CLB_MODE\t");
   Serial.print(readRegister(0xA0, 1));
   Serial.print("\t");
   Serial.println();
@@ -297,9 +297,6 @@ void Muca::init(bool interupt) {
     delay(100);
   } else {
     Serial.println("[Muca] Error while setting up Muca. Are you sure the SDA/SCL are connected?");
-    while(true) {
-      Serial.println("noooo");
-    }
   }
 
     // Interrupt
@@ -312,9 +309,6 @@ void Muca::init(bool interupt) {
       attachInterrupt(0,touch_interrupt,FALLING);
     #endif   
   }
-
-    Serial.println("---");
-
   setRegister(0xA7,0x04); // Set autocalibration
 }
 
@@ -473,7 +467,9 @@ void Muca::getRawData() {
       Wire.write(byte(0x01));
       Wire.write(rowAddr);
       unsigned int st = Wire.endTransmission(false);
-      if (st != 0) Serial.print("i2c write failed");
+      if (st != 0)  {
+        Serial.println("[Muca] i2c write failed");
+      }
 
       delayMicroseconds(50);
       //  delayMicroseconds(50); // Wait at least 100us
@@ -482,7 +478,10 @@ void Muca::getRawData() {
 
       Wire.beginTransmission(I2C_ADDRESS);
       Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
-      Wire.endTransmission(false);
+      st = Wire.endTransmission(false);
+      if (st != 0)  {
+        Serial.println("[Muca] i2c write failed");
+      }
       Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS); // TODO : false was added IDK why
       unsigned int g = 0;
       while (Wire.available()) {
@@ -512,7 +511,7 @@ unsigned int Muca::getRawData(int col, int row) {
   unsigned int data = 0;
 
   if(col == 0 || row == 0) {
-    Serial.print(F("The column or raw number must be higher than 0"));
+    Serial.println(F("[Muca] The column or raw number must be higher than 0"));
     return 0;
   }
 
@@ -529,7 +528,7 @@ unsigned int Muca::getRawData(int col, int row) {
   Wire.write(byte(0x01));
   Wire.write(rowAddr);
   unsigned int st = Wire.endTransmission();
-  if (st != 0) Serial.print("i2c write failed");
+  if (st != 0) Serial.println("[Muca] i2c write failed");
 
   delayMicroseconds(50);
 
