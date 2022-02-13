@@ -16,8 +16,8 @@ void setup() {
 
 void loop() {
   if (muca.updated()) {
-    SendRawString();
-    // SendRawByte(); // Faster
+   // SendRawString();
+     SendRawByte(); // Faster
   }
   delay(16); // waiting 16ms for 60fps
 
