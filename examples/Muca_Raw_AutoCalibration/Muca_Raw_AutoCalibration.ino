@@ -11,7 +11,7 @@ void setup() {
   //muca.skipLine(TX,(const short[]) {18,19,20,21}, 4);
 
 
-  muca.init();
+  muca.init(false);
   muca.useRawData(true); // If you use the raw data, the interrupt is not working
 }
 
