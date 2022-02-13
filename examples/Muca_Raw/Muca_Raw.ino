@@ -5,7 +5,7 @@ Muca muca;
 void setup() {
   Serial.begin(115200);
 
-  muca.init();
+  muca.init(false);
   muca.useRawData(true); // If you use the raw data, the interrupt is not working
  // muca.setGain(100);
 }
