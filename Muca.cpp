@@ -24,7 +24,7 @@ byte Muca::readRegister(byte reg, short numberBytes) {
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, numberBytes, false);
+  Wire.requestFrom(I2C_ADDRESS, numberBytes);
   byte readedValue = Wire.read();
   return readedValue;
   //Serial.print();
@@ -297,6 +297,9 @@ void Muca::init(bool interupt) {
     delay(100);
   } else {
     Serial.println("[Muca] Error while setting up Muca. Are you sure the SDA/SCL are connected?");
+    while(true) {
+      Serial.println("noooo");
+    }
   }
 
     // Interrupt
@@ -310,6 +313,7 @@ void Muca::init(bool interupt) {
     #endif   
   }
 
+    Serial.println("---");
 
   setRegister(0xA7,0x04); // Set autocalibration
 }
@@ -354,7 +358,7 @@ TouchPoint Muca::getTouch(int i) {
 
 
 void Muca::getTouchData() {
-  Wire.requestFrom(I2C_ADDRESS, TOUCH_REGISTERS, false);
+  Wire.requestFrom(I2C_ADDRESS, TOUCH_REGISTERS);
 
   int register_number = 0;
   // get all register bytes when available
@@ -479,7 +483,7 @@ void Muca::getRawData() {
       Wire.beginTransmission(I2C_ADDRESS);
       Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
       Wire.endTransmission(false);
-      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS, false); // TODO : false was added IDK why
+      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS); // TODO : false was added IDK why
       unsigned int g = 0;
       while (Wire.available()) {
         result[g++] = Wire.read();
@@ -533,7 +537,7 @@ unsigned int Muca::getRawData(int col, int row) {
  // Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
   Wire.write(byte(0x10) + colAddr*2); 
   Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, 2, false); // TODO : false was added IDK why
+  Wire.requestFrom(I2C_ADDRESS, 2); // TODO : false was added IDK why
   unsigned int g = 0;
   while (Wire.available()) {
     result[g++] = Wire.read();

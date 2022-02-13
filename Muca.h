@@ -36,7 +36,7 @@ class TouchPoint {
     unsigned int speed;
 };
 
-enum MucaLine {TX, RX = NUM_ROWS};
+enum MucaLine {LINE_TX, LINE_RX = NUM_ROWS};
 
 class Muca {
   public:
@@ -76,7 +76,7 @@ class Muca {
     //CHORE
     bool poll();
     bool isInit = false;
-    bool useInterrupt = true;
+    bool useInterrupt = false;
     bool skippedLines[NUM_ROWS + NUM_COLUMNS]; // Maximum SkippedLines
 
     // TOUCH
