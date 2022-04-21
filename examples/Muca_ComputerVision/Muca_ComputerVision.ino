@@ -16,9 +16,9 @@ void loop() {
 void GetRaw() {
   if (muca.updated()) {
     
-   for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
+   for (int i = 0; i < NUM_TX * NUM_RX; i++) {
       if (muca.grid[i] > 0) Serial.print(muca.grid[i]);
-      if (i != NUM_ROWS * NUM_COLUMNS - 1)
+      if (i != NUM_TX * NUM_RX - 1)
         Serial.print(",");
     }
    Serial.println();

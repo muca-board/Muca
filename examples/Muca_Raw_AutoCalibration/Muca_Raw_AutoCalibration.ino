@@ -4,7 +4,7 @@ Muca muca;
 
 #define CALIBRATION_STEPS 20
 short currentCalibrationStep = 0;
-unsigned int calibrationGrid[NUM_ROWS * NUM_COLUMNS];
+unsigned int calibrationGrid[NUM_TX * NUM_RX];
 
 void setup() {
   Serial.begin(115200);
@@ -25,16 +25,16 @@ void GetRaw() {
 
     if (currentCalibrationStep >= CALIBRATION_STEPS) {
       // Print the array value
-      for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
+      for (int i = 0; i < NUM_TX * NUM_RX; i++) {
         if (muca.grid[i] > 0) Serial.print((muca.grid[i] - calibrationGrid[i] ) + 20 ); // The +30 is to be sure it's positive
-        if (i != NUM_ROWS * NUM_COLUMNS - 1)
+        if (i != NUM_TX * NUM_RX - 1)
           Serial.print(",");
       }
       Serial.println();
     }
     else { // Once the calibration is done
       //Save the grid value to the calibration array
-      for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
+      for (int i = 0; i < NUM_TX * NUM_RX; i++) {
         if (currentCalibrationStep == 0) calibrationGrid[i] = muca.grid[i]; // Copy array
         else calibrationGrid[i] = (calibrationGrid[i] + muca.grid[i]) / 2 ; // Get average
       }

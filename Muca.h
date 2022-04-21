@@ -16,8 +16,8 @@
 #define NUM_TOUCHPOINTS   4
 
 // RAW
-#define NUM_COLUMNS       12 // Columns are doing the sensing
-#define NUM_ROWS          21// Row are doing the pull ground
+#define NUM_RX       12 // Columns are doing the sensing
+#define NUM_TX          21// Row are doing the pull ground
 
 #define CTP_INT           2
 
@@ -36,7 +36,7 @@ class TouchPoint {
     unsigned int speed;
 };
 
-enum MucaLine {LINE_TX, LINE_RX = NUM_ROWS};
+enum MucaLine {LINE_TX, LINE_RX = NUM_TX};
 
 class Muca {
   public:
@@ -63,10 +63,10 @@ class Muca {
     TouchPoint getTouch(int i);
 
     //RAW
-    unsigned int grid[NUM_ROWS * NUM_COLUMNS];
+    unsigned int grid[NUM_TX * NUM_RX];
     void useRawData(bool useRaw);
     void getRawData();
-    unsigned int getRawData(int col, int row);
+    unsigned int getRawData(int rx, int tx);
 
     // I2C
     byte readRegister(byte reg,short numberBytes);
@@ -77,7 +77,7 @@ class Muca {
     bool poll();
     bool isInit = false;
     bool useInterrupt = false;
-    bool skippedLines[NUM_ROWS + NUM_COLUMNS]; // Maximum SkippedLines
+    bool skippedLines[NUM_TX + NUM_RX]; // Maximum SkippedLines
 
     // TOUCH
     unsigned short width = 800;

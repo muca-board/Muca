@@ -98,8 +98,8 @@ void Muca::printAllRegisters() {
 
 void Muca::skipLine(MucaLine line, const short lineNumber[], size_t size) {
   // How Skip line works :
-  // The TX lines are stored from zero to  NUM_COLUMNS (12)
-  // The RX lines are stores from NUM_ROWS (21) to end
+  // The TX lines are stored from zero to  NUM_TX (12)
+  // The RX lines are stores from NUM_RX (21) to end
   // To retrieve, if(skippedLines[i] == true) 
   Serial.print("[Muca] Adding skip line ");
   for(short i=0; i<  size; i++ ) {
@@ -117,14 +117,14 @@ void Muca::setResolution(unsigned short w, unsigned short h) {
   short skippedTX = 0;
   short skippedRX = 0;
 
-  for(short i=0; i<  NUM_ROWS; i++ )
+  for(short i=0; i<  NUM_TX; i++ )
    if(skippedLines[i] == true) skippedTX++;
 
-  for(short i=NUM_ROWS; i< NUM_ROWS + NUM_COLUMNS ; i++ )
+  for(short i=NUM_TX; i< NUM_TX + NUM_RX ; i++ )
     if(skippedLines[i] == true) skippedRX++;
 
-  width = w * NUM_ROWS / (NUM_ROWS - skippedTX);
-  height = h * NUM_COLUMNS / (NUM_COLUMNS - skippedRX);;
+  width = w * NUM_TX / (NUM_TX - skippedTX);
+  height = h * NUM_RX / (NUM_RX - skippedRX);;
 
   Serial.print("[Muca] Setting dimention");
   if(skippedTX + skippedRX >0) Serial.print(", the dimentions are adapted with skipped lines.");
@@ -452,20 +452,20 @@ void Muca::getRawData() {
 
 
   // Read Data
-  for (unsigned int rowAddr = 0; rowAddr < NUM_ROWS; rowAddr++) {
+  for (unsigned int txAddr = 0; txAddr < NUM_TX; txAddr++) {
 
-    if(skippedLines[rowAddr] == true)  // if the line is marked as skipped, don't write it
+    if(skippedLines[txAddr] == true)  // if the line is marked as skipped, don't write it
     {
-       for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
-        grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = 0;
+       for (unsigned int rxAddr = 0; rxAddr < NUM_RX; rxAddr++) {
+        grid[(txAddr * NUM_RX) +  NUM_RX - rxAddr - 1] = 0;
         }
     } else {
-      byte result[2  * NUM_COLUMNS];
+      byte result[2  * NUM_RX];
 
       //Start transmission
       Wire.beginTransmission(I2C_ADDRESS);
       Wire.write(byte(0x01));
-      Wire.write(rowAddr);
+      Wire.write(txAddr);
       unsigned int st = Wire.endTransmission(false);
       if (st != 0)  {
         Serial.println("[Muca] i2c write failed");
@@ -477,41 +477,49 @@ void Muca::getRawData() {
 
 
       Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
+      Wire.write(0x10); // The address of the first rxAddrumn is 0x10 (16 in decimal).
       st = Wire.endTransmission(false);
       if (st != 0)  {
         Serial.println("[Muca] i2c write failed");
       }
-      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_COLUMNS); // TODO : false was added IDK why
+      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_RX); // TODO : false was added IDK why
       unsigned int g = 0;
+
       while (Wire.available()) {
         result[g++] = Wire.read();
       }
 
 
-      for (unsigned int col = 0; col < NUM_COLUMNS; col++) {
-        if(skippedLines[NUM_ROWS + col] == true)  {
-            grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = 0;
+      for (unsigned int rxAddr = 0; rxAddr < NUM_RX; rxAddr++) {
+        if(skippedLines[NUM_TX + rxAddr] == true)  {
+            grid[(txAddr * NUM_RX) +  NUM_RX - rxAddr - 1] = 0;
         } else {
-          unsigned  int output = (result[2 * col] << 8) | (result[2 * col + 1]);
-          grid[(rowAddr * NUM_COLUMNS) +  NUM_COLUMNS - col - 1] = output; // We invert because the pinout is inverted
+          unsigned  int output = (result[2 * rxAddr] << 8) | (result[2 * rxAddr + 1]);
+           grid[(txAddr * NUM_RX) +  NUM_RX - rxAddr - 1] = output; // We invert because the pinout is inverted
         }
+      //  Serial.print("rxAddr ");
+       // Serial.println(rxAddr);
       }
+         //     Serial.print("txAddr ");
+
+        //Serial.println(txAddr);
+
+
 
     } // End if line is skipped
 
   } // End foreachrow
 }
 
-unsigned int Muca::getRawData(int col, int row) {
+unsigned int Muca::getRawData(int rx, int tx) {
 
   newTouch = true;
   rawData = true;
 
   unsigned int data = 0;
 
-  if(col == 0 || row == 0) {
-    Serial.println(F("[Muca] The column or raw number must be higher than 0"));
+  if(rx == 0 || tx == 0) {
+    Serial.println(F("[Muca] The rxumn or raw number must be higher than 0"));
     return 0;
   }
 
@@ -519,22 +527,22 @@ unsigned int Muca::getRawData(int col, int row) {
 
 
 // Read Data
-  int colAddr =   NUM_COLUMNS - (col-1) -1; // We invert because the pinout is inverted
-  int rowAddr =   (row-1);
+  int rxAddr =   NUM_RX- (rx-1) -1; // We invert because the pinout is inverted
+  int txAddr =   (tx-1);
 
   byte result[2];
   //Start transmission
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(byte(0x01));
-  Wire.write(rowAddr);
+  Wire.write(txAddr);
   unsigned int st = Wire.endTransmission();
   if (st != 0) Serial.println("[Muca] i2c write failed");
 
   delayMicroseconds(50);
 
   Wire.beginTransmission(I2C_ADDRESS);
- // Wire.write(0x10); // The address of the first column is 0x10 (16 in decimal).
-  Wire.write(byte(0x10) + colAddr*2); 
+ // Wire.write(0x10); // The address of the first rx is 0x10 (16 in decimal).
+  Wire.write(byte(0x10) + rxAddr*2); 
   Wire.endTransmission(false);
   Wire.requestFrom(I2C_ADDRESS, 2); // TODO : false was added IDK why
   unsigned int g = 0;

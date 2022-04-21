@@ -11,8 +11,8 @@ void setup() {
 }
 
 void loop() {
-  for(int row = 1; row <=21; row++) { // NUM_ROWS 21
-    for(int col = 1; col<= 12; col++) { // NUM_COLUMNS 12
+  for(int row = 1; row <=21; row++) { // NUM_TX 21
+    for(int col = 1; col<= 12; col++) { // NUM_RX 12
       if(col+row !=2)
         Serial.print(",");
       int val = muca.getRawData(col,row);

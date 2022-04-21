@@ -25,9 +25,9 @@ void loop() {
 
 void SendRawString() {
   // Print the array value
-  for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
+  for (int i = 0; i < NUM_TX * NUM_RX; i++) {
     if (muca.grid[i] >= 0) Serial.print(muca.grid[i]); // The +30 is to be sure it's positive
-    if (i != NUM_ROWS * NUM_COLUMNS - 1)
+    if (i != NUM_TX * NUM_RX - 1)
       Serial.print(",");
   }
   Serial.println();
@@ -42,7 +42,7 @@ void SendRawByte() {
   unsigned int minimum = 80000;
   uint8_t rawByteValues[254];
 
-  for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
+  for (int i = 0; i < NUM_TX * NUM_RX; i++) {
   if (muca.grid[i] > 0 && minimum > muca.grid[i])  {
       minimum = muca.grid[i]; // The +30 is to be sure it's positive
     }
@@ -51,7 +51,7 @@ void SendRawByte() {
   rawByteValues[1] = lowByte(minimum);
 
 
-  for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
+  for (int i = 0; i < NUM_TX * NUM_RX; i++) {
     rawByteValues[i + 2] = muca.grid[i] - minimum;
     // Serial.print(rawByteValues[i+2]);
     //  Serial.print(",");

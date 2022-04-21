@@ -22,13 +22,13 @@ void InterfaceSetup() {
 
   cp5.addSlider("thresholdMin")
     .setPosition(10, 10)
-    .setRange(0, 255)
+    .setRange(0, 10000)
     .moveTo(g5)
     ;
 
   cp5.addSlider("thresholdMax")
     .setPosition(10, 25)
-    .setRange(0, 255)
+    .setRange(0, 10000)
     .moveTo(g5)
     ;
 
@@ -126,7 +126,7 @@ void InterfaceSetup() {
     .setPosition(10, 10)
     .setSize(10, 10)
     .addItem("Enable Blob Detection", 1)
-    //.activate(0)
+    .activate(0)
     .moveTo(g1)
     ;
 
