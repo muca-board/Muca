@@ -16,8 +16,8 @@
 #define NUM_TOUCHPOINTS   4
 
 // RAW
-#define NUM_RX       12 // Columns are doing the sensing
-#define NUM_TX          21// Row are doing the pull ground
+#define NUM_RX       	  12 // Columns are doing the sensing
+#define NUM_TX            21 // Row are doing the pull ground
 
 #define CTP_INT           2
 
@@ -42,7 +42,7 @@ class Muca {
   public:
     Muca();
 
-    void init(bool interupt = true);
+    void init(bool interrupt = true);
     void skipLine(MucaLine line, const short lineNumber[], size_t size );
     
     //CHORE
