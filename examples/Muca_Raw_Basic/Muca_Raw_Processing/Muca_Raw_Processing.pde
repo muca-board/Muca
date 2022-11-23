@@ -5,14 +5,13 @@ int     SKIN_COLS          = 12;
 int     SKIN_ROWS          = 21;
 int     SKIN_CELLS         = SKIN_COLS * SKIN_ROWS;
 
-int     SERIAL_PORT        = 3; 
+int     SERIAL_PORT        = 0; 
 int     SERIAL_RATE        = 115200;
-
 
 // =========== VARIABLES ==================
 Serial  skinPort;
 boolean skinDataValid = false;
-boolean receiveDataAsByte = true;
+boolean receiveDataAsByte = false;
 
 int[ ]  skinBuffer;
 int[ ]  skinBufferCalibration = null;
@@ -23,8 +22,6 @@ PImage  skinImage     = createImage( SKIN_COLS, SKIN_ROWS, RGB );
 int minThreshold = 0;
 int maxThreshold = 200;
 
-
-
 void settings () { 
   size( SKIN_COLS*30, SKIN_ROWS*30 );
   noSmooth();
@@ -33,12 +30,8 @@ void settings () {
 void setup () { 
   noStroke( );
   printArray(Serial.list());
-  
   skinPort = new Serial( this, Serial.list( )[ SERIAL_PORT ], SERIAL_RATE );
-
 }
-
-
 
 void draw() {
   readSkinBuffer( );
@@ -58,10 +51,6 @@ void draw() {
   }
 }
 
-
-
-
-
 void readSkinBuffer() {
   if ( skinPort.available( ) > 0 ) {
     if (receiveDataAsByte)
@@ -73,9 +62,6 @@ void readSkinBuffer() {
   }
 }
 
-
-
-
 void readDataAsString() {
   String skinData = skinPort.readStringUntil( '\n' );
   if ( skinData != null ) {
@@ -83,7 +69,6 @@ void readDataAsString() {
     skinDataValid = skinBuffer.length == SKIN_CELLS;
   }
 }
-
 
 void readDataAsByte() {
   //Todo : There seem to be a bug of "black cell". Most likely due to the substraction of skinBufferCalibration. 
@@ -105,7 +90,6 @@ void readDataAsByte() {
   }
 }
 
-
 void saveSkinImage() {
   if (skinBufferCalibration == null) {
     println("Doing new calibration");
@@ -120,9 +104,6 @@ void saveSkinImage() {
   }
   skinImage.updatePixels( );
 }
-
-
-
 
 int countFrame = 0;
 float fps = 0.0F;

@@ -9,18 +9,12 @@
 
 // https://github.com/sumotoy/FT5206/blob/master/FT5206.h <- info on registers
 
-
 volatile bool newTouch = false;
 void interruptmuca() {
   newTouch = true;
 }
 
-
-Muca::Muca() {}
-
-
 byte Muca::readRegister(byte reg, short numberBytes) {
-
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission(false);
@@ -35,14 +29,42 @@ byte Muca::readRegister(byte reg, short numberBytes) {
 }
 
 byte Muca::setRegister(byte reg, byte val) {
-
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(reg);
   Wire.write(val); 
-
   return Wire.endTransmission(false);;
 }
 
+int Muca::getRegister(byte reg) {
+  // Read a register
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(reg);
+  unsigned int st = Wire.endTransmission(false);
+  if (st != 0)  {
+    Serial.println("[Muca] i2c write failed");
+  }
+  Wire.requestFrom(I2C_ADDRESS, 1);
+  byte result;
+  if (Wire.available()) {
+    result = Wire.read();
+  }
+  return result;
+}
+
+void Muca::getRegisters(byte reg, byte size, byte * buffer) {
+  // Read n registers
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(reg);
+  unsigned int st = Wire.endTransmission(false);
+  if (st != 0)  {
+    Serial.println("[Muca] i2c write failed");
+  }
+  Wire.requestFrom(I2C_ADDRESS, size);
+  byte i = 0;
+  while (Wire.available()) {
+    buffer[i++] = Wire.read();
+  }
+}
 
 void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, byte threashdiff ) {
   setRegister(0x80, touchdetectthresh);
@@ -55,10 +77,8 @@ void Muca::setConfig(byte touchdetectthresh, byte touchpeak, byte threshfocus, b
   setRegister(0x00,MODE_NORMAL); 	// DEVICE_MODE : NORMAL
 }
 
-
-
-//The gain value ,can by  changed from 1 to 31
-// Return to normal mode is RawData is not activated           
+// The gain value can be changed from 1 to 31
+// Return to normal mode in RawData is not activated           
 void Muca::setGain(int gain) {
     setRegister(0x00, MODE_TEST); 	// Ensure test mode
     delay(100);
@@ -67,15 +87,14 @@ void Muca::setGain(int gain) {
     Serial.println((gain));
 
     if(!rawData) {
-      setRegister(0x00, MODE_NORMAL); 	// Ensure test mode
+      setRegister(0x00, MODE_NORMAL);
       delay(100);
     }
 }
 
 
 void Muca::printAllRegisters() {
-
-  setRegister(0x00, MODE_NORMAL); 	// Ensure test mode
+  setRegister(0x00, MODE_NORMAL);
   // setRegister(0xA7, 0x03); 		// ID_G_ STATE   FACTORY
 
   byte prev = 0;
@@ -94,79 +113,6 @@ void Muca::printAllRegisters() {
     prev = current;
   }
 }
-
-
-void Muca::skipLine(MucaLine line, const short lineNumber[], size_t size) {
-  // How Skip line works :
-  // The TX lines are stored from zero to  NUM_TX (21)
-  // The RX lines are stores from NUM_RX (12) to end
-  // To retrieve, if(skippedLines[i] == true) 
-  Serial.print("[Muca] Adding skip line ");
-  for(short i=0; i<  size; i++ ) {
-    skippedLines[line + lineNumber[i] -1] = true; // -1 to retract the index 
-    Serial.print(line + lineNumber[i]);
-    Serial.print(" ");
-  }
-  Serial.println();
-}
-
-
-void Muca::setResolution(unsigned short w, unsigned short h) {
-
-  //The resolution is adapted regarding the skiped lines
-  short skippedTX = 0;
-  short skippedRX = 0;
-
-  for(short i=0; i<  NUM_TX; i++ )
-   if(skippedLines[i] == true) skippedTX++;
-
-  for(short i=NUM_TX; i< NUM_TX + NUM_RX ; i++ )
-    if(skippedLines[i] == true) skippedRX++;
-
-  width = w * NUM_TX / (NUM_TX - skippedTX);
-  height = h * NUM_RX / (NUM_RX - skippedRX);;
-
-  Serial.print("[Muca] Setting dimension");
-  if(skippedTX + skippedRX >0) Serial.print(", the dimentions are adapted with skipped lines.");
-  Serial.print(" ");
-  Serial.print(width);
-  Serial.print(" x ");
-  Serial.print(height);
-  Serial.println();
-/*
-// TODO : not working cause c'est de la merde
-delay(10);
-
-Serial.print("width_high:");readRegister(0x9c,1);      Serial.print("\t");
-Serial.print("width_low:");readRegister(0x9d,1);     Serial.print("\t");
-Serial.print("height_high:");readRegister(0x9e,1);     Serial.print("\t");
-Serial.print("height_low:");readRegister(0x9f,1);      Serial.print("\t");
-  
-  Serial.println();
-*/
-  /*
-  delay(50);
-  setRegister(0x00, MODE_NORMAL); // DEVICE_MODE : NORMAL
-  delay(50);
-  byte width_high = highByte(width);
-  byte width_low = lowByte(width);
-  byte height_high = highByte(height);
-  byte height_low = lowByte(height);
-
-
-  setRegister(0x98, width_high);
-  setRegister(0x99, width_low);
-  setRegister(0x9a, height_high);
-  setRegister(0x9b, height_low);
-  delay(10);
-  setRegister(0x00,MODE_NORMAL); // DEVICE_MODE : NORMAL
-  delay(10);
-    Serial.println("[Muca] Set Resolution");
-*/
-}
-
-
-
 
 void Muca::printInfo() {
 
@@ -198,7 +144,6 @@ void Muca::printInfo() {
   setRegister(0x00,MODE_NORMAL);
 }
 
-
 void Muca::autocal() {
 
   int error = 0;
@@ -214,7 +159,6 @@ void Muca::autocal() {
   Wire.write(0x4); // fts_i2c_write_reg(client, 2, 0x4);
   // https://github.com/KonstaT/sailfishos_kernel_jolla_msm8930/blob/master/drivers/input/touchscreen/focaltech_ft5316_ts.c
   Wire.endTransmission(I2C_ADDRESS);
-
 
   delay(300);
 
@@ -268,39 +212,61 @@ void Muca::autocal() {
   Serial.println("[Muca] Store CLB result OK.");
 }
 
+void Muca::selectLines(bool RX[NUM_RX], bool TX[NUM_TX]) {
+  // Reduce the number of lines scanned in raw mode if not used
+  uint8_t count = 0;
+  for(uint8_t i=0; i<NUM_RX; i++) { 
+	  RX_lines[i] = RX[i];
+    if (RX[i] == true) count++;
+  }
+  num_RX = count;
+  count=0;
+  for(uint8_t i=0; i<NUM_TX; i++) { 
+	  TX_lines[i] = TX[i];
+    if (TX[i] == true) count++;
+  }
+  num_TX = count;
+#ifdef DEBUG
+  Serial.print("Num_TX : ");
+  Serial.println(num_TX);
+  Serial.print("Num_RX : ");
+  Serial.println(num_RX);
+#endif
+}
 
 
+Muca::Muca() {}
 
-
-void Muca::init(bool interrupt) {
+bool Muca::init(bool interrupt) {
 
   useInterrupt = interrupt;
+ 
   //Setup I2C
   digitalWrite(SDA, LOW);
   digitalWrite(SCL, LOW);
 
   Wire.begin();
-  Wire.setClock(400000); 			// 400000 https://www.arduino.cc/en/Reference/WireSetClock
+  Wire.setClock(400000); 			// https://www.arduino.cc/en/Reference/WireSetClock
 
   Wire.setTimeout(200);
 
   byte initDone = -1;
   initDone = setRegister(0x00,MODE_NORMAL);
-  Serial.println("[Muca] Set NORMAL mode");
-
+  //Serial.println("[Muca] Set NORMAL mode");
 
   if (initDone == 0) {
-    Serial.println("[Muca] Initialized");
+    //Serial.println("[Muca] Initialized");
     delay(100);
     isInit = true;
     delay(100);
   } else {
     Serial.println("[Muca] Error while setting up Muca. Are you sure the SDA/SCL are connected?");
+    return 1;
   }
 
     // Interrupt
   if(useInterrupt) {
-      pinMode(CTP_INT ,INPUT);
+    pinMode(CTP_INT ,INPUT);
     #ifdef digitalPinToInterrupt
     // Serial.println("[Muca] Attachinterrupt");
      attachInterrupt(digitalPinToInterrupt(CTP_INT),interruptmuca,FALLING);
@@ -312,7 +278,7 @@ void Muca::init(bool interrupt) {
 }
 
 
-bool Muca::updated() {
+bool Muca::update() {
   if (!isInit)
     return false;
 
@@ -336,9 +302,6 @@ bool Muca::updated() {
       }
   }
 }
-
-
-
 
 //////////////////////////////
 //    TOUCH POINT DATA
@@ -398,108 +361,41 @@ void Muca::setReportRate(unsigned short rate) {
   setRegister(0x00,MODE_NORMAL);
 }
 
-
-
 //////////////////////////////
 //        RAW DATA
 //////////////////////////////
 
 void Muca::useRawData(bool useRaw) {
-    rawData = useRaw;
-    useInterrupt = false;
-    if(isInit && useRaw) {
-      setRegister(0x00,MODE_TEST);
-      Serial.println("[Muca] Set TEST mode");
+  rawData = useRaw;
+  useInterrupt = false;
+  grid = new unsigned int[num_TX*num_RX];   // Allocate only if raw mode is used, and after selectLines() was called
+  if(isInit && useRaw) {
+    setRegister(0x00, MODE_TEST);
+    Serial.println("[Muca] Set TEST mode");
   }
 }
 
-
 void Muca::getRawData() {
+  setRegister(byte(0x00),byte(0xC0)); 	    // Set Test/Read raw mode and Data Read Toggle mode
+  byte buffer[2  * NUM_RX];
+  byte gridTxAddr = 0, gridRxAddr = 0;                      // index to write activated lines packed in grid[]
+  // Read each activated line
+  for (unsigned int txAddr = 0; txAddr < NUM_TX; txAddr++) {
+    if(TX_lines[txAddr] == true) {
+      setRegister(0x01, NUM_TX - 1 - txAddr); // TX lines seem to be inverted
+      delayMicroseconds(50);
+      getRegisters(0x10, 2*NUM_RX, buffer);
 
-  rawData = true;
-
-/*
-  // Start scan //TODO : pas sur qu'on en a besoin
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(byte(0x00));
-  Wire.write(byte(0xc0));
-  Wire.endTransmission();
-
-  //Wait for scan complete
-  // Start scan //TODO : pas sur qu'on en a besoin
-
-
-  //Wait for scan complete
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(byte(0x00));
-  Wire.endTransmission();
-  int reading = 0;
-  while (1) {
-    Wire.requestFrom(I2C_ADDRESS, 1);
-    if (Wire.available()) {
-      reading = Wire.read();
-      int high_bit = (reading & (1 << 7));
-      if (high_bit == 0) {
-        break;
+      gridRxAddr = 0;
+      for (unsigned int rxAddr = 0; rxAddr < NUM_RX; rxAddr++) {
+        if(RX_lines[rxAddr] == true) {        // Ignore deactivated column (rx)
+          grid[(gridTxAddr * num_RX) + gridRxAddr ] = (buffer[2 * rxAddr] << 8) | (buffer[2 * rxAddr + 1]);
+          gridRxAddr++;
+        }
       }
+      gridTxAddr++;
     }
   }
-*/
-
-    // setRegister(byte(0x00),byte(0xc0));
-     setRegister(byte(0x00),byte(0xc0)); 	// I have no idea what it's doing
-
-
-  // Read Data
-  for (unsigned int txAddr = 0; txAddr < NUM_TX; txAddr++) {
-
-    if(skippedLines[txAddr] == true) { 		// If the line is marked as skipped, don't write it
-       for (unsigned int rxAddr = 0; rxAddr < NUM_RX; rxAddr++) {
-        grid[(txAddr * NUM_RX) +  NUM_RX - rxAddr - 1] = 0;
-        }
-    }
-    else {
-      byte result[2  * NUM_RX];
-
-      //Start transmission
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(byte(0x01));
-      Wire.write(txAddr);
-      unsigned int st = Wire.endTransmission(false);
-      if (st != 0)  {
-        Serial.println("[Muca] i2c write failed");
-      }
-
-      delayMicroseconds(50);
-      //delay(10);
-
-
-      Wire.beginTransmission(I2C_ADDRESS);
-      Wire.write(0x10); 			// The address of the first rxAddrumn is 0x10 (16 in decimal).
-      st = Wire.endTransmission(false);
-      if (st != 0)  {
-        Serial.println("[Muca] i2c write failed");
-      }
-      Wire.requestFrom(I2C_ADDRESS, 2 * NUM_RX);
-      unsigned int g = 0;
-
-      while (Wire.available()) {
-        result[g++] = Wire.read();
-      }
-
-
-      for (unsigned int rxAddr = 0; rxAddr < NUM_RX; rxAddr++) {
-        if(skippedLines[NUM_TX + rxAddr] == true)  {
-            // grid[(txAddr * NUM_RX) +  NUM_RX - rxAddr - 1] = 0;
-            grid[(txAddr * NUM_RX) + rxAddr ] = 0;
-        } else {
-          unsigned  int output = (result[2 * rxAddr] << 8) | (result[2 * rxAddr + 1]);
-           //grid[(txAddr * NUM_RX) +  NUM_RX - rxAddr - 1] = output; // We invert because the pinout is inverted
-           grid[(txAddr * NUM_RX) + rxAddr ] = output;
-        }
-      }
-    } // End if line is skipped
-  } // End foreachrow
 }
 
 unsigned int Muca::getRawData(int rx, int tx) {
@@ -535,7 +431,7 @@ unsigned int Muca::getRawData(int rx, int tx) {
  // Wire.write(0x10); // The address of the first rx is 0x10 (16 in decimal).
   Wire.write(byte(0x10) + rxAddr*2); 
   Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDRESS, 2); // TODO : false was added IDK why
+  Wire.requestFrom(I2C_ADDRESS, 2);
   unsigned int g = 0;
   while (Wire.available()) {
     result[g++] = Wire.read();
