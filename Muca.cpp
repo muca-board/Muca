@@ -83,8 +83,10 @@ void Muca::setGain(int gain) {
     setRegister(0x00, MODE_TEST); 	// Ensure test mode
     delay(100);
     setRegister(0x07, byte(gain));
+#ifdef DEBUG
     Serial.print("[Muca] Gain set to ");
     Serial.println((gain));
+#endif
 
     if(!rawData) {
       setRegister(0x00, MODE_NORMAL);
@@ -179,37 +181,44 @@ void Muca::autocal() {
     if ( ((reading & 0x70) >> 4) == 0x0)	// return to normal mode, calibration finish
     {
       done = true;
+#ifdef DEBUG
       Serial.println("[Muca] Calibration done!");
+#endif
       break;
     }
 
     delay(200);
+#ifdef DEBUG
     Serial.println("[Muca] Waiting calibration...");
+#endif
   }
 
-  Serial.println("[Muca] Calibration OK.");
+  //Serial.println("[Muca] Calibration OK.");
 
   delay(300);
 
-  
   error = setRegister(0x00,MODE_TEST);
 
+#ifdef DEBUG
   if (error != 0) { Serial.print("[Muca] Calibration Error"); Serial.println(error);}
+#endif
 
   delay(100);                       		// make sure already enter factory mode
 
-
-
   error = setRegister(0x02,0x5); 		// Save calibration result
 
+#ifdef DEBUG
   if (error != 0) {Serial.print("[Muca] Calibration Error"); Serial.println(error);}
+#endif
   delay(300);
 
   setRegister(0x00,MODE_NORMAL); 
 
 
   delay(300);
+#ifdef DEBUG
   Serial.println("[Muca] Store CLB result OK.");
+#endif
 }
 
 void Muca::selectLines(bool RX[NUM_RX], bool TX[NUM_TX]) {
@@ -370,15 +379,18 @@ void Muca::useRawData(bool useRaw) {
   useInterrupt = false;
   grid = new unsigned int[num_TX*num_RX];   // Allocate only if raw mode is used, and after selectLines() was called
   if(isInit && useRaw) {
-    setRegister(0x00, MODE_TEST);
+    //setRegister(0x00, MODE_TEST);
+    setRegister(byte(0x00),byte(0xC0)); 	    // Set Test/Read raw mode and Data Read Toggle mode
+#ifdef DEBUG
     Serial.println("[Muca] Set TEST mode");
+#endif
   }
 }
 
 void Muca::getRawData() {
   setRegister(byte(0x00),byte(0xC0)); 	    // Set Test/Read raw mode and Data Read Toggle mode
   byte buffer[2  * NUM_RX];
-  byte gridTxAddr = 0, gridRxAddr = 0;                      // index to write activated lines packed in grid[]
+  byte gridTxAddr = 0, gridRxAddr = 0;      // index to write selected lines only in grid[]
   // Read each activated line
   for (unsigned int txAddr = 0; txAddr < NUM_TX; txAddr++) {
     if(TX_lines[txAddr] == true) {
@@ -388,7 +400,7 @@ void Muca::getRawData() {
 
       gridRxAddr = 0;
       for (unsigned int rxAddr = 0; rxAddr < NUM_RX; rxAddr++) {
-        if(RX_lines[rxAddr] == true) {        // Ignore deactivated column (rx)
+        if(RX_lines[rxAddr] == true) {      // Ignore deactivated column (rx)
           grid[(gridTxAddr * num_RX) + gridRxAddr ] = (buffer[2 * rxAddr] << 8) | (buffer[2 * rxAddr + 1]);
           gridRxAddr++;
         }
@@ -406,11 +418,11 @@ unsigned int Muca::getRawData(int rx, int tx) {
   unsigned int data = 0;
 
   if(rx == 0 || tx == 0) {
-    Serial.println(F("[Muca] The rxumn or raw number must be higher than 0"));
+    Serial.println(F("[Muca] The rx number or raw number must be higher than 0"));
     return 0;
   }
 
-  setRegister(byte(0x00),byte(0xc0)); // I have no idea what it's doing
+  setRegister(byte(0x00),byte(0xc0));
 
 
 // Read Data

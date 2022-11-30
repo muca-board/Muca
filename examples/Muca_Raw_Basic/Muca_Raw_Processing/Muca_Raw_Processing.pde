@@ -1,50 +1,77 @@
 import processing.serial.*;
 
 // =========== CONSTANTS ==================
-int     SKIN_COLS          = 12;
-int     SKIN_ROWS          = 21;
-int     SKIN_CELLS         = SKIN_COLS * SKIN_ROWS;
+int     SKIN_COLS          = 12;   // Max 12 (RX, Autodetected now)
+int     SKIN_ROWS          = 21;   // Max 21 (TX)
+int     SKIN_CELLS         = 0;   // SKIN_COLS * SKIN_ROWS;
 
 int     SERIAL_PORT        = 0; 
 int     SERIAL_RATE        = 115200;
+
+boolean ROTATE             = true;
+int     ZOOM               = 60;
 
 // =========== VARIABLES ==================
 Serial  skinPort;
 boolean skinDataValid = false;
 boolean receiveDataAsByte = false;
+boolean sync_OK = false;
 
-int[ ]  skinBuffer;
+int[ ]  skinBuffer, syncBuffer;
 int[ ]  skinBufferCalibration = null;
-PImage  skinImage     = createImage( SKIN_COLS, SKIN_ROWS, RGB );
+PImage  skinImage;
 
 // =========== DISPLAY ==================
 
 int minThreshold = 0;
-int maxThreshold = 200;
+int maxThreshold = 75;  // == 1/gain
 
 void settings () { 
-  size( SKIN_COLS*30, SKIN_ROWS*30 );
+  //size(600, 800);
+  if(ROTATE) {
+    //size( SKIN_ROWS*ZOOM, SKIN_COLS*ZOOM );
+    size(4*ZOOM, 7*ZOOM);
+  } else {
+    size( SKIN_COLS*ZOOM, SKIN_ROWS*ZOOM );
+  }
   noSmooth();
 }
 
-void setup () { 
-  noStroke( );
-  printArray(Serial.list());
-  skinPort = new Serial( this, Serial.list( )[ SERIAL_PORT ], SERIAL_RATE );
+void setup() { 
+  noStroke();
+  printArray(Serial.list()); 
+  skinPort = new Serial( this, Serial.list()[ SERIAL_PORT ], SERIAL_RATE );
+  while (sync_OK == false) readSync();
+  print("Size of panel read correctly");
+
+  print("\nSKIN_COLS : ", SKIN_COLS, " SKIN_ROWS : ", SKIN_ROWS, "\n");
+  skinPort.write("s");
+  
+  if(ROTATE) {
+    skinImage = createImage( SKIN_ROWS, SKIN_COLS, RGB );
+  } else {
+    skinImage = createImage( SKIN_COLS, SKIN_ROWS, RGB );
+  }
+
 }
 
 void draw() {
-  readSkinBuffer( );
+  readSkinBuffer();
   background(200);
   if ( skinDataValid ) {
     IncrementFPS();
     saveSkinImage();
   }
-
-  image( skinImage, 0, 0, SKIN_COLS*30, SKIN_ROWS*30);
+  //imageMode(CENTER);
+  //image( skinImage, SKIN_COLS*ZOOM/2, SKIN_ROWS*ZOOM/2, SKIN_ROWS*ZOOM, SKIN_COLS*ZOOM);
+  if(ROTATE) {
+    image( skinImage, 0, 0, SKIN_ROWS*ZOOM, SKIN_COLS*ZOOM);
+  } else {
+    image( skinImage, 0, 0, SKIN_COLS*ZOOM, SKIN_ROWS*ZOOM);
+  }
   fill(255);
-  text("Click to reset calibration Matrix", 10, 20);
-  text("FPS: " + fps, 10, 35);
+  //text("Click to reset calibration Matrix", 10, 20);
+  //text("FPS: " + fps, 10, 35);
 
   if (mousePressed) {
     skinBufferCalibration = null;
@@ -62,9 +89,26 @@ void readSkinBuffer() {
   }
 }
 
+void readSync(){
+  while(sync_OK == false) {
+    String syncData = skinPort.readStringUntil( '\n' );
+    if ( syncData != null ) {
+      syncBuffer    = int( split( syncData, ':' ) );
+      if( syncBuffer.length == 5 ) {
+        SKIN_COLS = syncBuffer[1];
+        SKIN_ROWS = syncBuffer[3];
+        SKIN_CELLS = SKIN_COLS * SKIN_ROWS;  // Update the number of cells
+        sync_OK = true;
+      }
+    } else { delay(10); // Let the serial port fill 
+    }
+  }
+}
+
 void readDataAsString() {
   String skinData = skinPort.readStringUntil( '\n' );
   if ( skinData != null ) {
+    skinPort.write("s");    // Sync
     skinBuffer    = int( split( skinData, ',' ) );
     skinDataValid = skinBuffer.length == SKIN_CELLS;
   }
@@ -92,15 +136,28 @@ void readDataAsByte() {
 
 void saveSkinImage() {
   if (skinBufferCalibration == null) {
-    println("Doing new calibration");
     skinBufferCalibration = new int[SKIN_CELLS];
     skinBufferCalibration = skinBuffer;
+    println("Doing new calibration");
   }
-  for ( int i = 0; i < SKIN_CELLS; i++ ) {
+  
+  /*for ( int i = 0; i < SKIN_CELLS; i++ ) {
     int colVal = skinBuffer[i] - skinBufferCalibration[i];  // substract calibration matrix
     float cons =   map(constrain(colVal, minThreshold, maxThreshold), minThreshold, maxThreshold, 0, 255);
     color c = color(cons, cons, cons);
     skinImage.pixels[i] = c;
+  }*/
+  for(int i = 0; i<SKIN_ROWS; i++) {
+    for(int j = 0; j<SKIN_COLS; j++) {
+      int colVal = skinBuffer[i*SKIN_COLS+j] - skinBufferCalibration[i*SKIN_COLS+j];  // substract calibration matrix
+      float cons =   map(constrain(colVal, minThreshold, maxThreshold), minThreshold, maxThreshold, 0, 255);
+      color c = color(cons, cons, cons);
+      if(ROTATE) {
+        skinImage.pixels[j*SKIN_ROWS+i] = c;
+      } else {
+        skinImage.pixels[i*SKIN_COLS+j] = c;
+      }
+    }
   }
   skinImage.updatePixels( );
 }
