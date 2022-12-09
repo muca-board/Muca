@@ -8,7 +8,7 @@ int     SKIN_CELLS         = 0;   // SKIN_COLS * SKIN_ROWS;
 int     SERIAL_PORT        = 0; 
 int     SERIAL_RATE        = 115200;
 
-boolean ROTATE             = true;
+boolean ROTATE             = false;
 int     ZOOM               = 60;
 
 // =========== VARIABLES ==================
@@ -30,9 +30,11 @@ void settings () {
   //size(600, 800);
   if(ROTATE) {
     //size( SKIN_ROWS*ZOOM, SKIN_COLS*ZOOM );
-    size(4*ZOOM, 7*ZOOM);
+    size(4*ZOOM, 7*ZOOM); // APEM PCB
   } else {
-    size( SKIN_COLS*ZOOM, SKIN_ROWS*ZOOM );
+    // Demo board
+    //size( SKIN_COLS*ZOOM, SKIN_ROWS*ZOOM );
+    size(3*ZOOM, 5*ZOOM); // APEM Scotch
   }
   noSmooth();
 }
@@ -155,7 +157,10 @@ void saveSkinImage() {
       if(ROTATE) {
         skinImage.pixels[j*SKIN_ROWS+i] = c;
       } else {
-        skinImage.pixels[i*SKIN_COLS+j] = c;
+        // No rotation (Demo board)
+        //skinImage.pixels[i*SKIN_COLS+j] = c;
+        // Rotate 180°
+        skinImage.pixels[(SKIN_COLS-i)*SKIN_COLS+(SKIN_ROWS-j)] = c;
       }
     }
   }

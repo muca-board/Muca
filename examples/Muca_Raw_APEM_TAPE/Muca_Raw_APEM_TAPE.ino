@@ -24,8 +24,8 @@ void setup() {
   
   // Custom panels :
   // Put a "0" when physical rx or tx line is not connected, "1" instead
-  bool rx[]={1,1,1,1,1,1,1,0,0,0,0,0};
-  bool tx[]={1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  bool rx[]={1,1,1,0,0,0,0,0,0,0,0,0};
+  bool tx[]={1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   muca.selectLines(rx, tx); // Comment this line to use the full panel
 #ifdef DEBUG
   Serial.print("Num_TX/Rows : ");
