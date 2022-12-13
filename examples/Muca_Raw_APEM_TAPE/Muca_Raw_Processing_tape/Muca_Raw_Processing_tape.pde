@@ -5,7 +5,7 @@ int     SKIN_COLS          = 12;   // Max 12 (RX, Autodetected now)
 int     SKIN_ROWS          = 21;   // Max 21 (TX)
 int     SKIN_CELLS         = 0;   // SKIN_COLS * SKIN_ROWS;
 
-int     SERIAL_PORT        = 0; 
+int     SERIAL_PORT        = 2; 
 int     SERIAL_RATE        = 115200;
 
 boolean ROTATE             = false;
