@@ -275,6 +275,7 @@ bool Muca::init(bool interrupt) {
     #endif   
   }
   setRegister(0xA7,0x04); // Set autocalibration
+  return 0;  // necessary to avoid error
 }
 
 
