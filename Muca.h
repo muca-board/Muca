@@ -16,8 +16,13 @@
 #define NUM_TOUCHPOINTS   4
 
 // RAW
-#define NUM_RX       	    12 // Columns are doing the sensing
+#define NUM_RX            12 // Columns are doing the sensing
 #define NUM_TX            21 // Row are doing the pull ground
+
+#define NUM_COLUMNS       NUM_RX   // for backward compatibility
+#define NUM_ROWS          NUM_TX   // for backward compatibility
+#define updated()         update() // for backward compatibility
+
 
 #define CTP_INT           2
 
