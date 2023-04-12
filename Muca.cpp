@@ -44,7 +44,7 @@ int Muca::getRegister(byte reg) {
     Serial.println("[Muca] i2c write failed");
   }
   Wire.requestFrom(I2C_ADDRESS, 1);
-  byte result;
+  byte result = -1;
   if (Wire.available()) {
     result = Wire.read();
   }
